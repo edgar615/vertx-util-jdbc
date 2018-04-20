@@ -19,6 +19,7 @@
         <vertx.version>3.5.0</vertx.version>
         <slf4j.version>1.7.24</slf4j.version>
         <mysql.version>6.0.6</mysql.version>
+        <jdbc.codegen.version>1.0.10</jdbc.codegen.version>
 
         <util.version>1.0.18.beta2</util.version>
 
@@ -72,6 +73,20 @@
                 <scope>test</scope>
             </dependency>
 
+            <!--持久层生成-->
+            <dependency>
+                <groupId>com.github.edgar615</groupId>
+                <artifactId>jdbc-codegen</artifactId>
+                <version>${jdbc.codegen.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.version}</version>
+                <scope>test</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -111,6 +126,15 @@
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!--持久层生成-->
+        <dependency>
+            <groupId>com.github.edgar615</groupId>
+            <artifactId>jdbc-codegen</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
         </dependency>
     </dependencies>
 
