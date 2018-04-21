@@ -1,6 +1,8 @@
 package com.github.edgar615.util.vertx.jdbc;
 
+import com.google.common.base.CaseFormat;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -9,10 +11,15 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.github.edgar615.util.base.MorePreconditions;
 import com.github.edgar615.util.base.StringUtils;
 import com.github.edgar615.util.db.SQLBindings;
+import com.github.edgar615.util.exception.DefaultErrorCode;
+import com.github.edgar615.util.exception.SystemException;
+import com.github.edgar615.util.search.Example;
+import com.github.edgar615.util.search.Op;
 import com.github.edgar615.util.vertx.jdbc.meta.Table;
 import com.github.edgar615.util.vertx.jdbc.meta.TableRegistry;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.serviceproxy.ServiceException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -30,6 +37,81 @@ import java.util.stream.Collectors;
  * @author Edgar  Date 2018/4/18
  */
 public class JdbcUtils {
+
+  public static String toQuery(Example example) {
+    List<String> criteria = example.criteria().stream()
+            .map(c -> {
+              if (c.op() == Op.EQ) {
+                return c.field() + ":" + c.value();
+              }
+              if (c.op() == Op.NE) {
+                return "-" + c.field() + ":" + c.value();
+              }
+              if (c.op() == Op.GT) {
+                return c.field() + ":>" + c.value();
+              }
+              if (c.op() == Op.GE) {
+                return c.field() + ":>=" + c.value();
+              }
+              if (c.op() == Op.LT) {
+                return c.field() + ":<" + c.value();
+              }
+              if (c.op() == Op.LE) {
+                return c.field() + ":<=" + c.value();
+              }
+              if (c.op() == Op.BETWEEN) {
+                return c.field() + ":" + c.value() + ".." + c.secondValue();
+              }
+              if (c.op() == Op.CN) {
+                return c.field() + ":*" + c.value() + "*";
+              }
+              if (c.op() == Op.SW) {
+                return c.field() + ":" + c.value() + "*";
+              }
+              if (c.op() == Op.EW) {
+                return c.field() + ":*" + c.value();
+              }
+              return null;
+            }).filter(s -> !Strings.isNullOrEmpty(s))
+            .collect(Collectors.toList());
+    return Joiner.on(" ").join(criteria);
+  }
+
+  public static Example removeUndefinedField(String tableName, Example example) {
+    //对example做一次清洗，将表中不存在的条件删除，避免频繁出现500错误
+    List<String> tableFields = tableFields(tableName)
+            .stream().map(s -> lowerCamelName(s))
+            .collect(Collectors.toList());
+    example = example.removeUndefinedField(tableFields);
+    return example;
+  }
+
+  public static JsonObject underscoreField(JsonObject jsonObject) {
+    JsonObject copy = new JsonObject();
+    jsonObject.forEach(e -> {
+      copy.put(underscoreName(e.getKey()), e.getValue());
+    });
+    return copy;
+  }
+
+  public static JsonObject lowCamelField(JsonObject jsonObject) {
+    JsonObject copy = new JsonObject();
+    jsonObject.forEach(e -> {
+      copy.put(lowerCamelName(e.getKey()), e.getValue());
+    });
+    return copy;
+  }
+
+  public static JsonObject removeNull(JsonObject jsonObject) {
+    JsonObject copy = new JsonObject();
+    jsonObject.forEach(e -> {
+      if (e.getValue() != null) {
+        copy.put(e.getKey(), e.getValue());
+      }
+    });
+    return copy;
+  }
+
   public static <T> T convertToPojo(JsonObject jsonObject, Class<T> tClass) {
     ObjectMapper mapper = new ObjectMapper();
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -60,13 +142,15 @@ public class JdbcUtils {
     return getTable(tableName).getPk();
   }
 
-  private static Table getTable(String tableName) {
+  public static Table getTable(String tableName) {
     Optional<Table> optional =
             TableRegistry.instance().tables().stream()
                     .filter(table -> underscoreName(table.getName()).equalsIgnoreCase(tableName))
                     .findFirst();
     if (!optional.isPresent()) {
-      throw new NoSuchElementException("table:" + tableName);
+      SystemException exception = SystemException.create(DefaultErrorCode.TARGET_NOT_FOUND)
+              .setDetails("table:"+ tableName);
+      throw new SystemExceptionAdapter(exception);
     }
     return optional.get();
   }
@@ -221,6 +305,10 @@ public class JdbcUtils {
 
   private static String underscoreName(String name) {
     return StringUtils.underscoreName(name);
+  }
+
+  private static String lowerCamelName(String name) {
+    return (CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name));
   }
 
 

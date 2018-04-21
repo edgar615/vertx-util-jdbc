@@ -68,6 +68,17 @@
 
             <dependency>
                 <groupId>io.vertx</groupId>
+                <artifactId>vertx-service-proxy</artifactId>
+                <version>${vertx.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-codegen</artifactId>
+                <version>${vertx.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.vertx</groupId>
                 <artifactId>vertx-unit</artifactId>
                 <version>${vertx.version}</version>
                 <scope>test</scope>
@@ -109,6 +120,18 @@
         <dependency>
             <groupId>com.github.edgar615</groupId>
             <artifactId>util</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-service-proxy</artifactId>
+            <version>${vertx.version}</version>
+            <classifier>processor</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-codegen</artifactId>
         </dependency>
 
         <dependency>
@@ -185,6 +208,17 @@
                         <source>${java.version}</source>
                         <target>${java.version}</target>
                         <encoding>${project.build.sourceEncoding}</encoding>
+                        <annotationProcessors>
+                            <annotationProcessor>
+                                io.vertx.serviceproxy.ServiceProxyProcessor
+                            </annotationProcessor>
+                        </annotationProcessors>
+                        <generatedSourcesDirectory>
+                            ${project.basedir}/src/main/generated
+                        </generatedSourcesDirectory>
+                        <compilerArgs>
+                            <arg>-Acodegen.output=${project.basedir}/src/main</arg>
+                        </compilerArgs>
                     </configuration>
                 </plugin>
 

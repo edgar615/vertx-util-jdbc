@@ -1,10 +1,11 @@
-package com.github.edgar615.util.vertx.jdbc;
+package com.github.edgar615.util.vertx.jdbc.handler;
 
 import com.github.edgar615.util.db.SQLBindings;
+import com.github.edgar615.util.vertx.jdbc.JdbcUtils;
+import com.github.edgar615.util.vertx.jdbc.dataobj.InsertData;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
@@ -16,27 +17,14 @@ import io.vertx.ext.sql.UpdateResult;
  *
  * @author Edgar  Date 2018/4/20
  */
-public class DeleteByIdMessageHandler implements JdbcMessageHandler {
+public class InsertHandler {
 
-  private static final String ADDRESS = "__com.github.edgar615.util.vertx.jdbc.delete_by_id";
-
-  @Override
-  public String address() {
-    return ADDRESS;
-  }
-
-  @Override
-  public void handle(AsyncSQLClient sqlClient, MultiMap headers, JsonObject body,
+  public void handle(AsyncSQLClient sqlClient, InsertData insertData,
                      Handler<AsyncResult<JsonObject>> handler) {
-    String table = null;
-    Object id = null;
-    SQLBindings sqlBindings = null;
+    SQLBindings sqlBindings;
     try {
-      table = body.getString("table");
-      id= body.getValue("id");
-      sqlBindings = JdbcUtils.deleteById(table, id);
+      sqlBindings = JdbcUtils.insert(insertData.getResource(), insertData.getData());
     } catch (Exception e) {
-      e.printStackTrace();
       handler.handle(Future.failedFuture(e));
       return;
     }
@@ -55,8 +43,9 @@ public class DeleteByIdMessageHandler implements JdbcMessageHandler {
                 }
                 try {
                   UpdateResult updateResult = result.result();
+                  JsonArray jsonArray = updateResult.getKeys();
                   JsonObject jsonObject = new JsonObject()
-                          .put("result", updateResult.getUpdated());
+                          .put("result", jsonArray.getValue(0));
                   handler.handle(Future.succeededFuture(jsonObject));
                 } catch (Exception e) {
                   handler.handle(Future.failedFuture(e));

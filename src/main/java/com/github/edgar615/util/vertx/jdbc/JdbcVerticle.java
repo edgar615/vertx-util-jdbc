@@ -26,8 +26,6 @@ public class JdbcVerticle extends AbstractVerticle {
 
   private AsyncSQLClient sqlClient;
 
-  private static final List<JdbcMessageHandler> handlers
-           = Lists.newArrayList(ServiceLoader.load(JdbcMessageHandler.class));
 
   @Override
   public void start(Future<Void> startFuture) throws Exception {
@@ -42,17 +40,6 @@ public class JdbcVerticle extends AbstractVerticle {
 //    queryTimeout
     JsonObject mySQLConfig = config().getJsonObject("mysql");
     this.sqlClient = MySQLClient.createShared(vertx, mySQLConfig);
-    for (JdbcMessageHandler handler : handlers) {
-      vertx.eventBus().<JsonObject>consumer(handler.address(), msg -> {
-        handler.handle(sqlClient, msg.headers(), msg.body(), ar -> {
-          if (ar.failed()) {
-            EventbusUtils.onFailure(msg, ar.cause());
-            return;
-          }
-          msg.reply(ar.result());
-        });
-      });
-    }
     //读取数据库元数据
     TableFetcherOptions options = new TableFetcherOptions().setUsername("admin")
             .setPassword("csst")
