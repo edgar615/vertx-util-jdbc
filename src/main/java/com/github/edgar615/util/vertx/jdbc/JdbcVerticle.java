@@ -1,21 +1,13 @@
 package com.github.edgar615.util.vertx.jdbc;
 
-import com.google.common.collect.Lists;
-
-import com.github.edgar615.util.db.SQLBindings;
-import com.github.edgar615.util.vertx.jdbc.meta.TableFetcher;
-import com.github.edgar615.util.vertx.jdbc.meta.TableFetcherOptions;
+import com.github.edgar615.util.vertx.jdbc.table.TableFetcher;
+import com.github.edgar615.util.vertx.jdbc.table.TableFetcherOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
 import io.vertx.ext.asyncsql.MySQLClient;
-import io.vertx.ext.sql.SQLConnection;
-import io.vertx.ext.sql.UpdateResult;
-
-import java.util.List;
-import java.util.ServiceLoader;
+import io.vertx.serviceproxy.ServiceBinder;
 
 /**
  * Created by Edgar on 2018/4/20.
@@ -49,5 +41,12 @@ public class JdbcVerticle extends AbstractVerticle {
             .setDatabase("user_new");
     TableFetcher fetcher = new TableFetcher(vertx, options);
     fetcher.start(vertx, startFuture);
+
+    //除了通过service proxy外，还可以直接通过eventbus调用
+//    PersistentService service = new PersistentServiceImpl(sqlClient);
+//    new ServiceBinder(vertx)
+//            .setAddress("database-service-address")
+//            .register(PersistentService.class, service);
+//    vertx.eventBus().registerCodec(new SystemExceptionMessageCodec());
   }
 }

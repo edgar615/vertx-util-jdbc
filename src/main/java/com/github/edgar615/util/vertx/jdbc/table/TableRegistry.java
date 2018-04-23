@@ -1,6 +1,5 @@
-package com.github.edgar615.util.vertx.jdbc.meta;
+package com.github.edgar615.util.vertx.jdbc.table;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 

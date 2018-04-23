@@ -3,9 +3,9 @@ package com.github.edgar615.util.vertx.jdbc;
 import com.google.common.collect.Lists;
 
 import com.github.edgar615.util.db.SQLBindings;
-import com.github.edgar615.util.vertx.jdbc.meta.TableFetcher;
-import com.github.edgar615.util.vertx.jdbc.meta.TableFetcherOptions;
-import com.github.edgar615.util.vertx.jdbc.meta.TableRegistry;
+import com.github.edgar615.util.vertx.jdbc.table.TableFetcher;
+import com.github.edgar615.util.vertx.jdbc.table.TableFetcherOptions;
+import com.github.edgar615.util.vertx.jdbc.table.TableRegistry;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;

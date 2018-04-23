@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -206,7 +207,8 @@ public class JdbcVerticleTest {
   public void testUpdateByExample(TestContext testContext) {
     AtomicBoolean check = new AtomicBoolean();
     JsonObject data = new JsonObject()
-            .put("username", "username");
+            .put("username", "username")
+            .put("createdOn", new Date().toString());
     Example example = Example.create()
             .equalsTo("username", "xxxx")
             .equalsTo("xxx", "username");

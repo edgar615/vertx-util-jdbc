@@ -15,11 +15,10 @@ import com.github.edgar615.util.exception.DefaultErrorCode;
 import com.github.edgar615.util.exception.SystemException;
 import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.search.Op;
-import com.github.edgar615.util.vertx.jdbc.meta.Table;
-import com.github.edgar615.util.vertx.jdbc.meta.TableRegistry;
+import com.github.edgar615.util.vertx.jdbc.table.Table;
+import com.github.edgar615.util.vertx.jdbc.table.TableRegistry;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.serviceproxy.ServiceException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 

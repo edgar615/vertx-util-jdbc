@@ -1,6 +1,4 @@
-package com.github.edgar615.util.vertx.jdbc.meta;
-
-import com.google.common.base.CaseFormat;
+package com.github.edgar615.util.vertx.jdbc.table;
 
 import java.util.ArrayList;
 import java.util.List;

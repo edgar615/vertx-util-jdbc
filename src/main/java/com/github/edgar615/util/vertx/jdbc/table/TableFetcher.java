@@ -1,4 +1,4 @@
-package com.github.edgar615.util.vertx.jdbc.meta;
+package com.github.edgar615.util.vertx.jdbc.table;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;

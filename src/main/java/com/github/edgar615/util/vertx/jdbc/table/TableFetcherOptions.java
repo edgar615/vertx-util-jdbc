@@ -1,4 +1,4 @@
-package com.github.edgar615.util.vertx.jdbc.meta;
+package com.github.edgar615.util.vertx.jdbc.table;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
