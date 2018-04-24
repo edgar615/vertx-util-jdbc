@@ -129,14 +129,14 @@ public class JdbcUtils {
     return findById(tableName, id, Lists.newArrayList());
   }
 
-  private static List<String> tableFields(String tableName) {
+  public static List<String> tableFields(String tableName) {
     return getTable(tableName).getColumns()
             .stream()
             .map(c -> c.getName())
             .collect(Collectors.toList());
   }
 
-  private static String primaryKey(String tableName) {
+  public static String primaryKey(String tableName) {
     return getTable(tableName).getPk();
   }
 
@@ -301,11 +301,11 @@ public class JdbcUtils {
     return SQLBindings.create(s.toString(), params);
   }
 
-  private static String underscoreName(String name) {
+  public static String underscoreName(String name) {
     return StringUtils.underscoreName(name);
   }
 
-  private static String lowerCamelName(String name) {
+  public static String lowerCamelName(String name) {
     return (CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name));
   }
 
