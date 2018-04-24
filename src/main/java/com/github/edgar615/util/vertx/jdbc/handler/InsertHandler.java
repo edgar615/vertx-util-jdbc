@@ -17,7 +17,7 @@ import io.vertx.ext.sql.UpdateResult;
  *
  * @author Edgar  Date 2018/4/20
  */
-public class InsertHandler {
+public class InsertHandler implements JdbcHandler {
 
   public void handle(AsyncSQLClient sqlClient, InsertData insertData,
                      Handler<AsyncResult<JsonObject>> handler) {
@@ -28,6 +28,7 @@ public class InsertHandler {
       handler.handle(Future.failedFuture(e));
       return;
     }
+    log(sqlBindings);
     final SQLBindings finalSqlBindings = sqlBindings;
     sqlClient.getConnection(ar -> {
       if (ar.failed()) {

@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
  */
 public class CountByExampleHandler implements JdbcHandler {
 
+
   public void handle(AsyncSQLClient sqlClient,
                      CountExample countExample,
                      Handler<AsyncResult<Integer>> handler) {
@@ -48,6 +49,7 @@ public class CountByExampleHandler implements JdbcHandler {
       handler.handle(Future.failedFuture(e));
       return;
     }
+    log(sqlBindings);
     sqlClient.getConnection(ar -> {
       if (ar.failed()) {
         handler.handle(Future.failedFuture(ar.cause()));

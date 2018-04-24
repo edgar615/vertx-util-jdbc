@@ -13,6 +13,7 @@ import com.github.edgar615.util.vertx.jdbc.dataobj.UpdateExample;
 import com.github.edgar615.util.vertx.jdbc.dataobj.UpdateById;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
 import io.vertx.ext.asyncsql.MySQLClient;
@@ -46,19 +47,15 @@ public class JdbcVerticleTest {
     JsonObject
             mySQLConfig = new JsonObject().put("host", "test.ihorn.com.cn").put
             ("username", "admin").put("password", "csst").put("database", "user_new");
-    AsyncSQLClient sqlClient = MySQLClient.createShared(vertx, mySQLConfig);
+    JsonObject persistentConfig = new JsonObject()
+            .put("address", "database-service-address")
+            .put("tables", new JsonArray().add("user"));
+
     AtomicBoolean check = new AtomicBoolean();
     DeploymentOptions options = new DeploymentOptions().setConfig(new JsonObject().put("mysql",
-                                                                                       mySQLConfig));
+                                                                                       mySQLConfig).put("persistent", persistentConfig));
     vertx.deployVerticle(JdbcVerticle.class, options, ar -> check.set(true));
     Awaitility.await().until(() -> check.get());
-
-    PersistentService service = new PersistentServiceImpl(sqlClient);
-// Register the handler
-    new ServiceBinder(vertx)
-            .setAddress("database-service-address")
-            .register(PersistentService.class, service);
-    vertx.eventBus().registerCodec(new SystemExceptionMessageCodec());
 
     ServiceProxyBuilder
             builder = new ServiceProxyBuilder(vertx).setAddress("database-service-address");

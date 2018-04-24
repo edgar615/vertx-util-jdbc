@@ -11,6 +11,8 @@ import io.vertx.ext.asyncsql.AsyncSQLClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,8 +24,11 @@ import java.util.stream.Collectors;
  */
 public interface JdbcHandler {
 
+  Logger LOGGER = LoggerFactory.getLogger(JdbcHandler.class);
+
   default void query(AsyncSQLClient sqlClient, SQLBindings sqlBindings,
                      Handler<AsyncResult<List<JsonObject>>> handler) {
+    log(sqlBindings);
     sqlClient.getConnection(ar -> {
       if (ar.failed()) {
         handler.handle(Future.failedFuture(ar.cause()));
@@ -59,6 +64,7 @@ public interface JdbcHandler {
   default void updateOrDelete(AsyncSQLClient sqlClient,
                               SQLBindings sqlBindings,
                               Handler<AsyncResult<Integer>> handler) {
+    log(sqlBindings);
     sqlClient.getConnection(ar -> {
       if (ar.failed()) {
         handler.handle(Future.failedFuture(ar.cause()));
@@ -80,5 +86,7 @@ public interface JdbcHandler {
               });
     });
   }
+
+  default void log(SQLBindings sqlBindings) {LOGGER.info("sql:{}, args:{}", sqlBindings.sql(), sqlBindings.bindings());}
 
 }
