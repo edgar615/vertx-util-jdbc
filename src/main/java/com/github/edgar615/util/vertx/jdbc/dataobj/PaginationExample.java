@@ -1,9 +1,8 @@
 package com.github.edgar615.util.vertx.jdbc.dataobj;
 
-import com.google.common.base.Joiner;
-
 import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.vertx.jdbc.JdbcUtils;
+import com.google.common.base.Joiner;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 

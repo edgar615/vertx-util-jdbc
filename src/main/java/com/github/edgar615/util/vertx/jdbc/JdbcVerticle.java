@@ -1,11 +1,10 @@
 package com.github.edgar615.util.vertx.jdbc;
 
-import com.google.common.base.Joiner;
-
 import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.vertx.jdbc.dataobj.FindExample;
 import com.github.edgar615.util.vertx.jdbc.table.TableFetcher;
 import com.github.edgar615.util.vertx.jdbc.table.TableFetcherOptions;
+import com.google.common.base.Joiner;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;

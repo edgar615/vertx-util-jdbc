@@ -74,7 +74,25 @@ public class PersistentServiceVertxEBProxy implements PersistentService {
     } catch (IllegalStateException ex) {}
   }
 
-  public void insert(InsertData insertData, Handler<AsyncResult<JsonObject>> handler) {
+  public void insertAndGenerateKey(InsertData insertData, Handler<AsyncResult<Integer>> handler) {
+    if (closed) {
+    handler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("insertData", insertData == null ? null : insertData.toJson());
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "insertAndGenerateKey");
+    _vertx.eventBus().<Integer>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        handler.handle(Future.failedFuture(res.cause()));
+      } else {
+        handler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+  }
+
+  public void insert(InsertData insertData, Handler<AsyncResult<Void>> handler) {
     if (closed) {
     handler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return;
@@ -83,7 +101,7 @@ public class PersistentServiceVertxEBProxy implements PersistentService {
     _json.put("insertData", insertData == null ? null : insertData.toJson());
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "insert");
-    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
+    _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         handler.handle(Future.failedFuture(res.cause()));
       } else {

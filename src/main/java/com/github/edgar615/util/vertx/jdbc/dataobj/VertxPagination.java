@@ -2,8 +2,6 @@ package com.github.edgar615.util.vertx.jdbc.dataobj;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
-import com.github.edgar615.util.vertx.jdbc.JdbcUtils;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 

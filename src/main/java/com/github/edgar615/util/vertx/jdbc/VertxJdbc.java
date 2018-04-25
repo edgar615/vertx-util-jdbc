@@ -1,12 +1,11 @@
 package com.github.edgar615.util.vertx.jdbc;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-
 import com.github.edgar615.util.db.Page;
 import com.github.edgar615.util.db.Pagination;
 import com.github.edgar615.util.db.Persistent;
 import com.github.edgar615.util.search.Example;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -23,6 +22,10 @@ import java.util.function.Function;
  */
 public interface VertxJdbc {
 
+  void close();
+
+  void close(Handler<AsyncResult<Void>> handler);
+
   /**
    * 新增数据.
    *
@@ -31,8 +34,16 @@ public interface VertxJdbc {
    * @param <ID>       主键类型
    */
 
-  <ID> void insert(Persistent<ID> persistent, Handler<AsyncResult<ID>> handler);
+  <ID> void insert(Persistent<ID> persistent, Handler<AsyncResult<Void>> handler);
 
+  /**
+   * 新增数据.
+   *
+   * @param persistent 持久化对象
+   * @param handler    如果主键是自增，返回主键值，否则返回0
+   */
+
+  void insertAndGenerateKey(Persistent<Integer> persistent, Handler<AsyncResult<Integer>> handler);
   /**
    * 根据主键删除.
    *

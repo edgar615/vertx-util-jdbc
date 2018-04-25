@@ -19,7 +19,9 @@ import java.util.List;
 @VertxGen
 public interface PersistentService {
 
-  void insert(InsertData insertData, Handler<AsyncResult<JsonObject>> handler);
+  void insertAndGenerateKey(InsertData insertData, Handler<AsyncResult<Integer>> handler);
+
+  void insert(InsertData insertData, Handler<AsyncResult<Void>> handler);
 
   void deleteById(DeleteById deleteById, Handler<AsyncResult<Integer>> handler);
 

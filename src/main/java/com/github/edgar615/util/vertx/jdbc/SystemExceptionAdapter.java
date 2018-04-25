@@ -1,8 +1,7 @@
 package com.github.edgar615.util.vertx.jdbc;
 
-import com.google.common.collect.Multimap;
-
 import com.github.edgar615.util.exception.SystemException;
+import com.google.common.collect.Multimap;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -13,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Created by Edgar on 2018/4/21.

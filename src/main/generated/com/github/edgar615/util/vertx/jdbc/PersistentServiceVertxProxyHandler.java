@@ -127,6 +127,10 @@ public class PersistentServiceVertxProxyHandler extends ProxyHandler {
       }
       accessed();
       switch (action) {
+        case "insertAndGenerateKey": {
+          service.insertAndGenerateKey(json.getJsonObject("insertData") == null ? null : new com.github.edgar615.util.vertx.jdbc.dataobj.InsertData(json.getJsonObject("insertData")), createHandler(msg));
+          break;
+        }
         case "insert": {
           service.insert(json.getJsonObject("insertData") == null ? null : new com.github.edgar615.util.vertx.jdbc.dataobj.InsertData(json.getJsonObject("insertData")), createHandler(msg));
           break;

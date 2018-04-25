@@ -1,5 +1,6 @@
 package com.github.edgar615.util.vertx.jdbc;
 
+import com.github.edgar615.util.vertx.jdbc.action.*;
 import com.google.common.collect.Lists;
 
 import com.github.edgar615.util.base.Randoms;
@@ -48,9 +49,9 @@ public class JdbcTaskTest {
 
     AtomicBoolean check = new AtomicBoolean();
     DeploymentOptions options = new DeploymentOptions().setConfig(new JsonObject().put("mysql",
-                                                                                       mySQLConfig)
-                                                                          .put("persistent",
-                                                                               persistentConfig));
+            mySQLConfig)
+            .put("persistent",
+                    persistentConfig));
     vertx.deployVerticle(JdbcVerticle.class, options, ar -> check.set(true));
     Awaitility.await().until(() -> check.get());
 
@@ -65,9 +66,9 @@ public class JdbcTaskTest {
     JdbcTask jdbcTask = new JdbcTaskImpl(sqlClient);
     JsonObject data = new JsonObject()
             .put("username", "username");
-    jdbcTask = jdbcTask.insert("insert", "user", data);
-    jdbcTask.findById("foo", "user", ctx -> ctx.get("insert"));
-    Future<Long> future = jdbcTask.done(ctx -> (Long) ctx.get("insert"));
+    jdbcTask = jdbcTask.execute("insert", InsertAndGenerateKeyAction.create("user", data));
+    jdbcTask.execute("foo", ctx -> FindByIdAction.create("user", ctx.get("insert")));
+    Future<Integer> future = jdbcTask.done(ctx -> (Integer) ctx.get("insert"));
     AtomicBoolean check = new AtomicBoolean();
     future.setHandler(ar -> {
       if (ar.failed()) {
@@ -85,11 +86,11 @@ public class JdbcTaskTest {
     AsyncSQLClient sqlClient = MySQLClient.createShared(vertx, mySQLConfig);
     JdbcTask jdbcTask = new JdbcTaskImpl(sqlClient);
 
-    jdbcTask.countByExample("count1", "user", Example.create());
+    jdbcTask.execute("count1", CountByExampleAction.create("user", Example.create()));
     JsonObject data = new JsonObject()
             .put("username", "username");
-    jdbcTask = jdbcTask.insert("insert", "user", data);
-    jdbcTask.countByExample("count2", "user", Example.create());
+    jdbcTask = jdbcTask.execute("insert", InsertAndGenerateKeyAction.create("user", data));
+    jdbcTask.execute("count2", CountByExampleAction.create("user", Example.create()));
     Future<List<Integer>> future = jdbcTask.done(ctx -> Lists.newArrayList((Integer) ctx.get
             ("count1"), (Integer) ctx.get("count2")));
     AtomicBoolean check = new AtomicBoolean();
@@ -112,15 +113,13 @@ public class JdbcTaskTest {
     AsyncSQLClient sqlClient = MySQLClient.createShared(vertx, mySQLConfig);
     JdbcTask jdbcTask = new JdbcTaskImpl(sqlClient);
 
-    jdbcTask.findFirstByExample("first", "user", Example.create());
-    jdbcTask.countByExample("count1", "user", Example.create());
-    JsonObject data = new JsonObject()
-            .put("username", "username");
-    jdbcTask = jdbcTask.deleteById("delete", "user", ctx -> {
+    jdbcTask.execute("first", FindFirstByExampleAction.create("user", Example.create()));
+    jdbcTask.execute("count1", CountByExampleAction.create("user", Example.create()));
+    jdbcTask.execute("delete", ctx -> {
       JsonObject jsonObject = (JsonObject) ctx.get("first");
-      return jsonObject.getValue("userId");
+      return DeleteByIdAction.create("user", jsonObject.getValue("userId"));
     });
-    jdbcTask.countByExample("count2", "user", Example.create());
+    jdbcTask.execute("count2", CountByExampleAction.create("user", Example.create()));
     Future<List<Integer>> future = jdbcTask.done(ctx -> Lists.newArrayList((Integer) ctx.get
             ("count1"), (Integer) ctx.get("count2")));
     AtomicBoolean check = new AtomicBoolean();
@@ -136,48 +135,6 @@ public class JdbcTaskTest {
       }
     });
     Awaitility.await().until(() -> check.get());
-  }
-
-  @Test
-  public void testTx(TestContext testContext) {
-    AsyncSQLClient sqlClient = MySQLClient.createShared(vertx, mySQLConfig);
-    JdbcTask jdbcTask = new JdbcTaskImpl(sqlClient);
-
-    jdbcTask.findFirstByExample("first", "user", Example.create());
-    jdbcTask.countByExample("count1", "user", Example.create());
-    jdbcTask = jdbcTask.deleteById("delete", "user", ctx -> {
-      JsonObject jsonObject = (JsonObject) ctx.get("first");
-      return jsonObject.getValue("userId");
-    });
-    JsonObject data = new JsonObject()
-            .put("username", Randoms.randomNumber(343));
-    jdbcTask = jdbcTask.insert("insert", "user", data);
-    Future<Map<String, Object>> future = jdbcTask.done(ctx -> ctx);
-    AtomicBoolean check1 = new AtomicBoolean();
-    future.setHandler(ar -> {
-      if (ar.failed()) {
-        check1.set(true);
-      } else {
-        testContext.fail();
-      }
-    });
-    Awaitility.await().until(() -> check1.get());
-    JdbcTask jdbcTask2 = new JdbcTaskImpl(sqlClient);
-    jdbcTask2.countByExample("count2", "user", Example.create());
-    Future<List<Integer>> future2 =
-            jdbcTask.done(ctx -> Lists.newArrayList((Integer) ctx.get("count2")));
-    AtomicBoolean check2 = new AtomicBoolean();
-    future2.setHandler(ar -> {
-      if (ar.failed()) {
-        ar.cause().printStackTrace();
-        testContext.fail();
-      } else {
-        int count1 = ar.result().get(0);
-        System.out.println(count1);
-        check2.set(true);
-      }
-    });
-    Awaitility.await().until(() -> check2.get());
   }
 
 }

@@ -1,10 +1,5 @@
 package com.github.edgar615.util.vertx.jdbc;
 
-import com.google.common.base.CaseFormat;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -17,16 +12,15 @@ import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.search.Op;
 import com.github.edgar615.util.vertx.jdbc.table.Table;
 import com.github.edgar615.util.vertx.jdbc.table.TableRegistry;
+import com.google.common.base.CaseFormat;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
