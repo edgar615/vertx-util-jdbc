@@ -1,7 +1,10 @@
 package com.github.edgar615.util.vertx.jdbc.handler;
 
 import com.github.edgar615.util.db.SQLBindings;
+import com.github.edgar615.util.exception.SystemException;
 import com.github.edgar615.util.vertx.jdbc.JdbcUtils;
+import com.github.edgar615.util.vertx.jdbc.SystemExceptionAdapter;
+import com.github.edgar615.util.vertx.jdbc.dataobj.CountExample;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -26,38 +29,60 @@ public interface JdbcHandler {
 
   Logger LOGGER = LoggerFactory.getLogger(JdbcHandler.class);
 
+  default void queryInConn(SQLConnection connection, SQLBindings sqlBindings,
+                       Handler<AsyncResult<List<JsonObject>>> handler) {
+    connection.queryWithParams(sqlBindings.sql(),
+                               new JsonArray(sqlBindings.bindings()), result -> {
+              if (result.failed()) {
+                handler.handle(Future.failedFuture(result.cause()));
+                return;
+              }
+              try {
+                ResultSet resultSet = result.result();
+                List<JsonObject> results = resultSet.getRows();
+                if (results.isEmpty()) {
+                  handler.handle(Future.succeededFuture(results));
+                  return;
+                }
+                List<JsonObject> newResults = results.stream()
+                        .map(json -> JdbcUtils.removeNull(json))
+                        .map(json -> JdbcUtils.lowCamelField(json))
+                        .collect(Collectors.toList());
+                handler.handle(Future.succeededFuture(newResults));
+              } catch (Exception e) {
+                e.printStackTrace();
+                handler.handle(Future.failedFuture(e));
+              }
+            });
+  }
+
+  default void updateOrDelete(SQLConnection connection,
+                              SQLBindings sqlBindings,
+                              Handler<AsyncResult<Integer>> handler) {
+    log(sqlBindings);
+    connection.updateWithParams(sqlBindings.sql(),
+                                new JsonArray(sqlBindings.bindings()), result -> {
+              if (result.failed()) {
+                handler.handle(Future.failedFuture(result.cause()));
+                return;
+              }
+              try {
+                UpdateResult updateResult = result.result();
+                handler.handle(Future.succeededFuture(updateResult.getUpdated()));
+              } catch (Exception e) {
+                handler.handle(Future.failedFuture(e));
+              }
+            });
+  }
+
   default void query(AsyncSQLClient sqlClient, SQLBindings sqlBindings,
                      Handler<AsyncResult<List<JsonObject>>> handler) {
-    log(sqlBindings);
     sqlClient.getConnection(ar -> {
       if (ar.failed()) {
         handler.handle(Future.failedFuture(ar.cause()));
         return;
       }
-      SQLConnection connection = ar.result();
-      connection.queryWithParams(sqlBindings.sql(),
-                                 new JsonArray(sqlBindings.bindings()), result -> {
-                if (result.failed()) {
-                  handler.handle(Future.failedFuture(result.cause()));
-                  return;
-                }
-                try {
-                  ResultSet resultSet = result.result();
-                  List<JsonObject> results = resultSet.getRows();
-                  if (results.isEmpty()) {
-                    handler.handle(Future.succeededFuture(results));
-                    return;
-                  }
-                  List<JsonObject> newResults = results.stream()
-                          .map(json -> JdbcUtils.removeNull(json))
-                          .map(json -> JdbcUtils.lowCamelField(json))
-                          .collect(Collectors.toList());
-                  handler.handle(Future.succeededFuture(newResults));
-                } catch (Exception e) {
-                  e.printStackTrace();
-                  handler.handle(Future.failedFuture(e));
-                }
-              });
+      queryInConn(ar.result(), sqlBindings, handler);
     });
   }
 

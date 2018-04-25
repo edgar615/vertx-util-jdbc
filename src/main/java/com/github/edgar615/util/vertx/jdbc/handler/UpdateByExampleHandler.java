@@ -11,12 +11,14 @@ import com.github.edgar615.util.exception.SystemException;
 import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.vertx.jdbc.JdbcUtils;
 import com.github.edgar615.util.vertx.jdbc.SystemExceptionAdapter;
+import com.github.edgar615.util.vertx.jdbc.dataobj.DeleteExample;
 import com.github.edgar615.util.vertx.jdbc.dataobj.UpdateExample;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
+import io.vertx.ext.sql.SQLConnection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,22 @@ import java.util.List;
  * @author Edgar  Date 2018/4/20
  */
 public class UpdateByExampleHandler implements JdbcHandler {
+
+  public void handle2(SQLConnection connection, UpdateExample updateExample,
+                      Handler<AsyncResult<Integer>> handler) {
+    SQLBindings sqlBindings;
+    try {
+      sqlBindings = createSqlBindings(updateExample);
+    } catch (Exception e) {
+      if (e instanceof SystemException) {
+        handler.handle(Future.failedFuture(new SystemExceptionAdapter((SystemException) e)));
+        return;
+      }
+      handler.handle(Future.failedFuture(e));
+      return;
+    }
+    updateOrDelete(connection, sqlBindings, handler);
+  }
 
   public void handle(AsyncSQLClient sqlClient, UpdateExample updateExample,
                      Handler<AsyncResult<Integer>> handler) {

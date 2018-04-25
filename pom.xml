@@ -22,6 +22,7 @@
         <jdbc.codegen.version>1.0.10</jdbc.codegen.version>
 
         <util.version>1.0.18.beta2</util.version>
+        <vertx.util.version>1.0.14</vertx.util.version>
 
         <logback.version>1.2.3</logback.version>
     </properties>
@@ -66,7 +67,11 @@
                 <artifactId>util</artifactId>
                 <version>${util.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.github.edgar615</groupId>
+                <artifactId>vertx-util</artifactId>
+                <version>${vertx.util.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-service-proxy</artifactId>
@@ -128,6 +133,10 @@
         <dependency>
             <groupId>com.github.edgar615</groupId>
             <artifactId>util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.edgar615</groupId>
+            <artifactId>vertx-util</artifactId>
         </dependency>
 
         <dependency>

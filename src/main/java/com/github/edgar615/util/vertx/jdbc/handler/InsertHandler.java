@@ -19,6 +19,35 @@ import io.vertx.ext.sql.UpdateResult;
  */
 public class InsertHandler implements JdbcHandler {
 
+  public void handle2(SQLConnection connection, InsertData insertData,
+                     Handler<AsyncResult<JsonObject>> handler) {
+    SQLBindings sqlBindings;
+    try {
+      sqlBindings = JdbcUtils.insert(insertData.getResource(), insertData.getData());
+    } catch (Exception e) {
+      handler.handle(Future.failedFuture(e));
+      return;
+    }
+    log(sqlBindings);
+    final SQLBindings finalSqlBindings = sqlBindings;
+    connection.updateWithParams(finalSqlBindings.sql(),
+                                new JsonArray(finalSqlBindings.bindings()), result -> {
+              if (result.failed()) {
+                handler.handle(Future.failedFuture(result.cause()));
+                return;
+              }
+              try {
+                UpdateResult updateResult = result.result();
+                JsonArray jsonArray = updateResult.getKeys();
+                JsonObject jsonObject = new JsonObject()
+                        .put("result", jsonArray.getValue(0));
+                handler.handle(Future.succeededFuture(jsonObject));
+              } catch (Exception e) {
+                handler.handle(Future.failedFuture(e));
+              }
+            });
+  }
+
   public void handle(AsyncSQLClient sqlClient, InsertData insertData,
                      Handler<AsyncResult<JsonObject>> handler) {
     SQLBindings sqlBindings;

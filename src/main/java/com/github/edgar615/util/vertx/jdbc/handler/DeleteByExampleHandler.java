@@ -8,6 +8,7 @@ import com.github.edgar615.util.db.SqlBuilder;
 import com.github.edgar615.util.exception.DefaultErrorCode;
 import com.github.edgar615.util.exception.SystemException;
 import com.github.edgar615.util.search.Example;
+import com.github.edgar615.util.vertx.jdbc.dataobj.DeleteById;
 import com.github.edgar615.util.vertx.jdbc.dataobj.DeleteExample;
 import com.github.edgar615.util.vertx.jdbc.JdbcUtils;
 import com.github.edgar615.util.vertx.jdbc.SystemExceptionAdapter;
@@ -15,6 +16,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
+import io.vertx.ext.sql.SQLConnection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +27,22 @@ import java.util.List;
  * @author Edgar  Date 2018/4/20
  */
 public class DeleteByExampleHandler implements JdbcHandler {
+
+  public void handle2(SQLConnection connection, DeleteExample deleteExample,
+                      Handler<AsyncResult<Integer>> handler) {
+    SQLBindings sqlBindings;
+    try {
+      sqlBindings = createSqlBindings(deleteExample);
+    } catch (Exception e) {
+      if (e instanceof SystemException) {
+        handler.handle(Future.failedFuture(new SystemExceptionAdapter((SystemException) e)));
+        return;
+      }
+      handler.handle(Future.failedFuture(e));
+      return;
+    }
+    updateOrDelete(connection, sqlBindings, handler);
+  }
 
   public void handle(AsyncSQLClient sqlClient,
                      DeleteExample deleteExample,

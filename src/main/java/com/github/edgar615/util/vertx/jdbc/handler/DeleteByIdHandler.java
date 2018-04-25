@@ -9,6 +9,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
+import io.vertx.ext.sql.SQLConnection;
 
 /**
  * Created by Edgar on 2018/4/20.
@@ -16,6 +17,22 @@ import io.vertx.ext.asyncsql.AsyncSQLClient;
  * @author Edgar  Date 2018/4/20
  */
 public class DeleteByIdHandler implements JdbcHandler {
+
+  public void handle2(SQLConnection connection, DeleteById deleteById,
+                      Handler<AsyncResult<Integer>> handler) {
+    SQLBindings sqlBindings;
+    try {
+      sqlBindings = JdbcUtils.deleteById(deleteById.getResource(), deleteById.getId());
+    } catch (Exception e) {
+      if (e instanceof SystemException) {
+        handler.handle(Future.failedFuture(new SystemExceptionAdapter((SystemException) e)));
+        return;
+      }
+      handler.handle(Future.failedFuture(e));
+      return;
+    }
+    updateOrDelete(connection, sqlBindings, handler);
+  }
 
   public void handle(AsyncSQLClient sqlClient, DeleteById deleteById,
                      Handler<AsyncResult<Integer>> handler) {

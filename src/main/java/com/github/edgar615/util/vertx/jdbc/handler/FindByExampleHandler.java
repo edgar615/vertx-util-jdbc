@@ -18,6 +18,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
+import io.vertx.ext.sql.SQLConnection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,23 @@ import java.util.stream.Collectors;
  * @author Edgar  Date 2018/4/20
  */
 public class FindByExampleHandler implements JdbcHandler {
+
+  public void handle2(SQLConnection connection,
+                     FindExample findExample,
+                     Handler<AsyncResult<List<JsonObject>>> handler) {
+    SQLBindings sqlBindings;
+    try {
+      sqlBindings = createSqlBindings(findExample);
+    } catch (Exception e) {
+      if (e instanceof SystemException) {
+        handler.handle(Future.failedFuture(new SystemExceptionAdapter((SystemException) e)));
+        return;
+      }
+      handler.handle(Future.failedFuture(e));
+      return;
+    }
+    queryInConn(connection, sqlBindings, handler);
+  }
 
   public void handle(AsyncSQLClient sqlClient,
                      FindExample findExample,

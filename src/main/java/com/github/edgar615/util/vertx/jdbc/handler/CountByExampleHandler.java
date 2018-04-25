@@ -34,6 +34,36 @@ import java.util.stream.Collectors;
  */
 public class CountByExampleHandler implements JdbcHandler {
 
+  public void handle2(SQLConnection connection,
+                      CountExample countExample,
+                      Handler<AsyncResult<Integer>> handler) {
+    SQLBindings sqlBindings;
+    try {
+      sqlBindings = createSqlBindings(countExample);
+    } catch (Exception e) {
+      if (e instanceof SystemException) {
+        handler.handle(Future.failedFuture(new SystemExceptionAdapter((SystemException) e)));
+        return;
+      }
+      handler.handle(Future.failedFuture(e));
+      return;
+    }
+    connection.queryWithParams(sqlBindings.sql(),
+                               new JsonArray(sqlBindings.bindings()), result -> {
+              if (result.failed()) {
+                handler.handle(Future.failedFuture(result.cause()));
+                return;
+              }
+              try {
+                ResultSet resultSet = result.result();
+                int count = resultSet.getResults().get(0).getInteger(0);
+                handler.handle(Future.succeededFuture(count));
+              } catch (Exception e) {
+                e.printStackTrace();
+                handler.handle(Future.failedFuture(e));
+              }
+            });
+  }
 
   public void handle(AsyncSQLClient sqlClient,
                      CountExample countExample,
