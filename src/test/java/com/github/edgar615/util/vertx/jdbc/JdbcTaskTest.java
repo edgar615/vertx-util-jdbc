@@ -152,7 +152,7 @@ public class JdbcTaskTest {
             }).execute(ctx -> {
       JsonObject jsonObject = new JsonObject()
               .put("username", "hoho");
-      Object id = ctx.get("id");
+      Object id = ctx.get("firstId");
       UpdateByIdAction action = UpdateByIdAction.create("user", jsonObject, id);
       return action;
     }).execute("count",

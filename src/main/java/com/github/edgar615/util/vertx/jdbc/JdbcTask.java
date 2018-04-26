@@ -2,6 +2,8 @@ package com.github.edgar615.util.vertx.jdbc;
 
 import io.vertx.core.Future;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -13,6 +15,8 @@ import java.util.function.Function;
  * @author Edgar  Date 2018/4/25
  */
 public interface JdbcTask {
+
+  Logger LOGGER = LoggerFactory.getLogger(JdbcTask.class);
 
   static JdbcTask create(AsyncSQLClient sqlClient) {
     return new JdbcTaskImpl(sqlClient);

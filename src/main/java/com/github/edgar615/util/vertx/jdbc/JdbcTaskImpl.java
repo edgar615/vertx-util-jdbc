@@ -103,14 +103,16 @@ class JdbcTaskImpl implements JdbcTask {
         }
         //回收connection
         connection.close(ar -> {
-          //log
+          LOGGER.debug("close connection");
         });
+        return;
       }
       connection.commit(commitResult -> {
         if (commitResult.failed()) {
-          //todo log
+          LOGGER.error("commit failed", commitResult.cause());
           future.fail(commitResult.cause());
         } else {
+          LOGGER.debug("commit");
           try {
             T result = function.apply(ctx);
             done = true;
@@ -121,7 +123,7 @@ class JdbcTaskImpl implements JdbcTask {
         }
         //回收connection
         connection.close(ar -> {
-          //log
+          LOGGER.debug("close connection");
         });
       });
     }).onFailure(e -> {
@@ -132,17 +134,18 @@ class JdbcTaskImpl implements JdbcTask {
         future.fail(e);
         //回收connection
         connection.close(ar -> {
-          //log
+          LOGGER.debug("close connection");
         });
         return;
       }
       //与提交事务不同，这里不关心事务回滚结果
       connection.rollback(commitResult -> {
+        LOGGER.debug("rollback");
         done = true;
         future.fail(e);
         //回收connection
         connection.close(ar -> {
-          //log
+          LOGGER.debug("close connection");
         });
       });
     });
