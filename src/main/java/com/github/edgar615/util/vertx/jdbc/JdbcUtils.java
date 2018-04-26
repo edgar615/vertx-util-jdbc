@@ -1,5 +1,10 @@
 package com.github.edgar615.util.vertx.jdbc;
 
+import com.google.common.base.CaseFormat;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -12,15 +17,16 @@ import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.search.Op;
 import com.github.edgar615.util.vertx.jdbc.table.Table;
 import com.github.edgar615.util.vertx.jdbc.table.TableRegistry;
-import com.google.common.base.CaseFormat;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -137,11 +143,12 @@ public class JdbcUtils {
   public static Table getTable(String tableName) {
     Optional<Table> optional =
             TableRegistry.instance().tables().stream()
-                    .filter(table -> underscoreName(table.getName()).equalsIgnoreCase(tableName))
+                    .filter(table -> table.getName()
+                            .equalsIgnoreCase(underscoreName(tableName)))
                     .findFirst();
     if (!optional.isPresent()) {
       SystemException exception = SystemException.create(DefaultErrorCode.TARGET_NOT_FOUND)
-              .setDetails("table:"+ tableName);
+              .setDetails("table:" + tableName);
       throw new SystemExceptionAdapter(exception);
     }
     return optional.get();
@@ -234,7 +241,7 @@ public class JdbcUtils {
   /**
    * insert.
    *
-   * @param tableName 表名
+   * @param tableName  表名
    * @param jsonObject 持久化对象
    * @return {@link SQLBindings}
    */
@@ -245,10 +252,10 @@ public class JdbcUtils {
     List<String> virtualFields = getTable(tableName).getVirtualFields();
     List<String> fields = getTable(tableName).getFields();
     jsonObject.forEach(e -> {
-      String columnName = underscoreName(e.getKey());
+      String columnName = lowerCamelName(e.getKey());
       if (e.getValue() != null && !virtualFields.contains(columnName)
           && fields.contains(columnName)) {
-        columns.add(columnName);
+        columns.add(underscoreName(columnName));
         prepare.add("?");
         params.add(e.getValue());
       }
@@ -267,9 +274,9 @@ public class JdbcUtils {
   /**
    * 根据主键更新,设置字段为null.
    *
-   * @param tableName  表名
-   * @param fields 需要更新的字段
-   * @param id     主键
+   * @param tableName 表名
+   * @param fields    需要更新的字段
+   * @param id        主键
    * @return {@link SQLBindings}
    */
   public static SQLBindings setNullById(String tableName,

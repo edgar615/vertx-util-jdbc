@@ -63,7 +63,7 @@ public class TableFetcherTest {
   public void testInsert(TestContext testContext) {
     JsonObject data = new JsonObject()
             .put(UUID.randomUUID().toString(), "foo")
-            .put("username", "foo");
+            .put("areaCode", "foo");
     SQLBindings sqlBindings = JdbcUtils.insert("user", data);
     System.out.println(sqlBindings.sql());
     System.out.println(sqlBindings.bindings());
