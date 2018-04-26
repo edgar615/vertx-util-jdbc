@@ -4,6 +4,7 @@ import io.vertx.core.Future;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
 
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -66,6 +67,8 @@ public interface JdbcTask {
    * @return
    */
   <T> JdbcTask execute(String taskName, Function<Map<String, Object>, JdbcAction<T>> actionFunction);
+
+  JdbcTask andThen(Consumer<Map<String, Object>> consumer);
 
   /**
    * 开启事务

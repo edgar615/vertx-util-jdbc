@@ -27,6 +27,10 @@ public class FindByExampleAction implements JdbcAction<List<JsonObject>> {
 
   private final Integer limit;
 
+  public static FindByExampleAction create(String table, Example example) {
+    return new FindByExampleAction(table, example, null, null);
+  }
+
   public static FindByExampleAction create(String table, Example example, Integer start, Integer limit) {
     return new FindByExampleAction(table, example, start, limit);
   }

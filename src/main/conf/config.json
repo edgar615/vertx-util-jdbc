@@ -6,6 +6,7 @@
     "username": "vertx",
     "password": "password",
     "charset": "UTF-8",
+    "maxPoolSize": 10,
     "connectTimeout": 10000,
     "testTimeout": 10000
   },
@@ -13,5 +14,10 @@
     "tables": ["user", "device"],
     "ignoreColumns": ["created_on", "updated_on"],
     "address" : "__com.github.edgar615.util.vertx.jdbc"
+  },
+  "eventbusConsumer" : {
+    "address" : "__com.github.edgar615.util.vertx.jdbc.loadAll",
+    "class": "com.github.edgar615.util.vertx.jdbc.LoadAllMessageConsumer",
+    "config": {}
   }
 }

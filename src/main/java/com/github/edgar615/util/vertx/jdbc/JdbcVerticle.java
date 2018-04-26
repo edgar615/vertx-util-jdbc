@@ -1,10 +1,10 @@
 package com.github.edgar615.util.vertx.jdbc;
 
-import com.github.edgar615.util.search.Example;
-import com.github.edgar615.util.vertx.jdbc.dataobj.FindExample;
+import com.google.common.base.Joiner;
+
+import com.github.edgar615.util.vertx.eventbus.EventbusUtils;
 import com.github.edgar615.util.vertx.jdbc.table.TableFetcher;
 import com.github.edgar615.util.vertx.jdbc.table.TableFetcherOptions;
-import com.google.common.base.Joiner;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -24,7 +24,6 @@ import java.util.List;
 public class JdbcVerticle extends AbstractVerticle {
 
   private AsyncSQLClient sqlClient;
-
 
   @Override
   public void start(Future<Void> startFuture) throws Exception {
@@ -53,53 +52,13 @@ public class JdbcVerticle extends AbstractVerticle {
       vertx.eventBus().registerCodec(new SystemExceptionMessageCodec());
     }
     //注册一个事件根据条件依次加载数据，一般用户系统刚启动时初始化数据
-    vertx.eventBus().<JsonObject>consumer("__com.github.edgar615.util.vertx.jdbc.loadAll", msg -> {
-      JsonObject jsonObject = msg.body();
-      loadAll(jsonObject);
-    });
+    try {
+      JsonArray consumerArray = config().getJsonArray("eventbusConsumer", new JsonArray());
+      EventbusUtils.registerConsumer(vertx, consumerArray);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
-  }
-
-  public void loadAll(JsonObject jsonObject) {
-    System.out.println(jsonObject);
-    String table = jsonObject.getString("resource");
-    String query = jsonObject.getString("query");
-    Integer start = jsonObject.getInteger("start", 0);
-    Integer limit = jsonObject.getInteger("limit", 20);
-    Object startPk = jsonObject.getValue("startPk");
-    String primaryKey = JdbcUtils.primaryKey(table);
-    Example example = Example.create().addQuery(query).asc(primaryKey)
-            .greaterThan(JdbcUtils.lowerCamelName(primaryKey), startPk);
-    FindExample findExample = new FindExample();
-    findExample.fromExample(example);
-    findExample.setResource(table);
-    //取出table，取出table的主键，搜索，按主键升序排序，搜索完成一次之后就修改example中的主键
-    findExample.setLimit(limit);
-    findExample.setStart(start);
-    findExample.setSorted(JdbcUtils.lowerCamelName(primaryKey));
-    PersistentService persistentService = new PersistentServiceImpl(sqlClient);
-    persistentService.findByExample(findExample, ar -> {
-      if (ar.failed()) {
-        //广播错误
-        ar.cause().printStackTrace();
-        return;
-      }
-      if (ar.result().isEmpty()) {
-        //通知加载完成
-        System.out.println("complete");
-      } else {
-        //广播数据
-        System.out.println(ar.result().size());
-        JsonObject lastResult = ar.result().get(ar.result().size() - 1);
-        Object lastPk = lastResult.getValue(JdbcUtils.lowerCamelName(primaryKey));
-        JsonObject nextJson = new JsonObject()
-                .put("startPk", lastPk)
-                .put("query", query)
-                .put("start", start + ar.result().size())
-                .put("resource", table);
-        loadAll(nextJson);
-      }
-    });
   }
 
   private void fetchTable(Future<Void> startFuture) {

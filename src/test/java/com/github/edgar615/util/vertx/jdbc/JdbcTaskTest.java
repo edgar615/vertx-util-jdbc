@@ -1,10 +1,15 @@
 package com.github.edgar615.util.vertx.jdbc;
 
-import com.github.edgar615.util.vertx.jdbc.action.*;
 import com.google.common.collect.Lists;
 
-import com.github.edgar615.util.base.Randoms;
 import com.github.edgar615.util.search.Example;
+import com.github.edgar615.util.vertx.jdbc.action.CountByExampleAction;
+import com.github.edgar615.util.vertx.jdbc.action.DeleteByIdAction;
+import com.github.edgar615.util.vertx.jdbc.action.FindByExampleAction;
+import com.github.edgar615.util.vertx.jdbc.action.FindByIdAction;
+import com.github.edgar615.util.vertx.jdbc.action.FindFirstByExampleAction;
+import com.github.edgar615.util.vertx.jdbc.action.InsertAndGenerateKeyAction;
+import com.github.edgar615.util.vertx.jdbc.action.UpdateByIdAction;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -21,7 +26,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -49,9 +53,9 @@ public class JdbcTaskTest {
 
     AtomicBoolean check = new AtomicBoolean();
     DeploymentOptions options = new DeploymentOptions().setConfig(new JsonObject().put("mysql",
-            mySQLConfig)
-            .put("persistent",
-                    persistentConfig));
+                                                                                       mySQLConfig)
+                                                                          .put("persistent",
+                                                                               persistentConfig));
     vertx.deployVerticle(JdbcVerticle.class, options, ar -> check.set(true));
     Awaitility.await().until(() -> check.get());
 
@@ -137,4 +141,29 @@ public class JdbcTaskTest {
     Awaitility.await().until(() -> check.get());
   }
 
+  @Test
+  public void test(TestContext testContext) {
+    AsyncSQLClient sqlClient = MySQLClient.createShared(vertx, mySQLConfig);
+    JdbcTask.create(sqlClient).execute("list", FindByExampleAction.create("user", Example.create()))
+            .andThen(ctx -> {
+              List<JsonObject> list = (List<JsonObject>) ctx.get("list");
+              JsonObject first = list.get(0);
+              ctx.put("firstId", first.getValue("userId"));
+            }).execute(ctx -> {
+      JsonObject jsonObject = new JsonObject()
+              .put("username", "hoho");
+      Object id = ctx.get("id");
+      UpdateByIdAction action = UpdateByIdAction.create("user", jsonObject, id);
+      return action;
+    }).execute("count",
+               CountByExampleAction.create("user", Example.create().equalsTo("username", "hoho")))
+            .done(ctx -> (Integer)ctx.get("count"))
+    .setHandler(ar -> {
+      if (ar.failed()) {
+        ar.cause().printStackTrace();
+      } else {
+        System.out.println(ar.result());
+      }
+    });
+  }
 }

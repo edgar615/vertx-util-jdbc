@@ -7,6 +7,7 @@ import io.vertx.ext.sql.SQLConnection;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -14,7 +15,7 @@ import java.util.function.Function;
  *
  * @author Edgar  Date 2018/4/25
  */
-public class JdbcTaskImpl implements JdbcTask {
+class JdbcTaskImpl implements JdbcTask {
   private final AsyncSQLClient sqlClient;
 
   private final Map<String, Object> context = new HashMap<>();
@@ -58,6 +59,12 @@ public class JdbcTaskImpl implements JdbcTask {
       });
       return future;
     });
+  }
+
+  @Override
+  public JdbcTask andThen(Consumer<Map<String, Object>> consumer) {
+    this.task = task.andThen(consumer);
+    return this;
   }
 
   @Override
@@ -118,7 +125,6 @@ public class JdbcTaskImpl implements JdbcTask {
         });
       });
     }).onFailure(e -> {
-      System.out.println(context);
       done = true;
       //回滚事务
       if (!inTx) {
