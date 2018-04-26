@@ -1,10 +1,12 @@
 package com.github.edgar615.util.vertx.jdbc;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+
+import com.github.edgar615.util.exception.SystemException;
 import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.vertx.jdbc.action.*;
 import com.github.edgar615.util.vertx.jdbc.dataobj.*;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -33,7 +35,7 @@ public class PersistentServiceImpl implements PersistentService {
     String table = insertData.getResource();
     JsonObject data = insertData.getData();
     JdbcTask.create(sqlClient).execute("result", InsertAndGenerateKeyAction.create(table, data))
-            .done(ctx -> (Integer) ctx.get("result")).setHandler(handler);
+            .done(ctx -> (Integer) ctx.get("result")).setHandler(wrapHandler(handler));
   }
 
   @Override
@@ -45,7 +47,12 @@ public class PersistentServiceImpl implements PersistentService {
             .done(ctx -> ctx);
     future.setHandler(ar -> {
       if (ar.failed()) {
-        handler.handle(Future.failedFuture(ar.cause()));
+        if (ar.cause() instanceof SystemException) {
+          SystemException exception = (SystemException) ar.cause();
+          handler.handle(Future.failedFuture(new SystemExceptionAdapter(exception)));
+        } else {
+          handler.handle(Future.failedFuture(ar.cause()));
+        }
       } else {
         handler.handle(Future.succeededFuture());
       }
@@ -58,7 +65,7 @@ public class PersistentServiceImpl implements PersistentService {
     String table = deleteById.getResource();
     Object id = deleteById.getId();
     JdbcTask.create(sqlClient).execute("result", DeleteByIdAction.create(table, id))
-            .done(ctx -> (Integer) ctx.get("result")).setHandler(handler);
+            .done(ctx -> (Integer) ctx.get("result")).setHandler(wrapHandler(handler));
   }
 
   @Override
@@ -68,7 +75,7 @@ public class PersistentServiceImpl implements PersistentService {
     Object id = updateById.getId();
     JsonObject data = updateById.getData();
     JdbcTask.create(sqlClient).execute("result", UpdateByIdAction.create(table, data, id))
-            .done(ctx -> (Integer) ctx.get("result")).setHandler(handler);
+            .done(ctx -> (Integer) ctx.get("result")).setHandler(wrapHandler(handler));
   }
 
   @Override
@@ -84,7 +91,7 @@ public class PersistentServiceImpl implements PersistentService {
               .trimResults().splitToList(findById.getFields());
     }
     JdbcTask.create(sqlClient).execute("result", FindByIdAction.create(table, id, fields))
-            .done(ctx -> (JsonObject) ctx.get("result")).setHandler(handler);
+            .done(ctx -> (JsonObject) ctx.get("result")).setHandler(wrapHandler(handler));
   }
 
   @Override
@@ -99,9 +106,10 @@ public class PersistentServiceImpl implements PersistentService {
               .trimResults().splitToList(findexample.getFields());
       example.addFields(fields);
     }
-    FindByExampleAction action = FindByExampleAction.create(table, example, findexample.getStart(), findexample.getLimit());
+    FindByExampleAction action = FindByExampleAction
+            .create(table, example, findexample.getStart(), findexample.getLimit());
     JdbcTask.create(sqlClient).execute("result", action)
-            .done(ctx -> (List<JsonObject>) ctx.get("result")).setHandler(handler);
+            .done(ctx -> (List<JsonObject>) ctx.get("result")).setHandler(wrapHandler(handler));
   }
 
   @Override
@@ -111,7 +119,7 @@ public class PersistentServiceImpl implements PersistentService {
             .addQuery(deleteExample.getQuery());
     DeleteByIdAction action = DeleteByIdAction.create(table, example);
     JdbcTask.create(sqlClient).execute("result", action)
-            .done(ctx -> (Integer) ctx.get("result")).setHandler(handler);
+            .done(ctx -> (Integer) ctx.get("result")).setHandler(wrapHandler(handler));
   }
 
   @Override
@@ -122,7 +130,7 @@ public class PersistentServiceImpl implements PersistentService {
     JsonObject data = updateExample.getData();
     UpdateByExampleAction action = UpdateByExampleAction.create(table, data, example);
     JdbcTask.create(sqlClient).execute("result", action)
-            .done(ctx -> (Integer) ctx.get("result")).setHandler(handler);
+            .done(ctx -> (Integer) ctx.get("result")).setHandler(wrapHandler(handler));
   }
 
   @Override
@@ -131,11 +139,12 @@ public class PersistentServiceImpl implements PersistentService {
     Example example = Example.create()
             .addQuery(countExample.getQuery());
     JdbcTask.create(sqlClient).execute("result", CountByExampleAction.create(table, example))
-            .done(ctx -> (Integer) ctx.get("result")).setHandler(handler);
+            .done(ctx -> (Integer) ctx.get("result")).setHandler(wrapHandler(handler));
   }
 
   @Override
-  public void pagination(PaginationExample paginationExample, Handler<AsyncResult<VertxPagination>> handler) {
+  public void pagination(PaginationExample paginationExample,
+                         Handler<AsyncResult<VertxPagination>> handler) {
     String table = paginationExample.getResource();
     Example example = Example.create()
             .addQuery(paginationExample.getQuery())
@@ -145,9 +154,10 @@ public class PersistentServiceImpl implements PersistentService {
               .trimResults().splitToList(paginationExample.getFields());
       example.addFields(fields);
     }
-    PaginationAction action = PaginationAction.create(table, example, paginationExample.getPage(), paginationExample.getPageSize());
+    PaginationAction action = PaginationAction
+            .create(table, example, paginationExample.getPage(), paginationExample.getPageSize());
     JdbcTask.create(sqlClient).execute("result", action)
-            .done(ctx -> (VertxPagination) ctx.get("result")).setHandler(handler);
+            .done(ctx -> (VertxPagination) ctx.get("result")).setHandler(wrapHandler(handler));
   }
 
   @Override
@@ -161,14 +171,29 @@ public class PersistentServiceImpl implements PersistentService {
               .trimResults().splitToList(findExample.getFields());
       example.addFields(fields);
     }
-    PageAction action = PageAction.create(table, example, findExample.getStart(), findExample.getLimit());
+    PageAction action =
+            PageAction.create(table, example, findExample.getStart(), findExample.getLimit());
     JdbcTask.create(sqlClient).execute("result", action)
-            .done(ctx -> (VertxPage) ctx.get("result")).setHandler(handler);
+            .done(ctx -> (VertxPage) ctx.get("result")).setHandler(wrapHandler(handler));
   }
-
 
   @Override
   public void close() {
 
+  }
+
+  private <T> Handler<AsyncResult<T>> wrapHandler(Handler<AsyncResult<T>> handler) {
+    return ar -> {
+      if (ar.failed()) {
+        if (ar.cause() instanceof SystemException) {
+          SystemException exception = (SystemException) ar.cause();
+          handler.handle(Future.failedFuture(new SystemExceptionAdapter(exception)));
+        } else {
+          handler.handle(Future.failedFuture(ar.cause()));
+        }
+      } else {
+        handler.handle(Future.succeededFuture(ar.result()));
+      }
+    };
   }
 }
