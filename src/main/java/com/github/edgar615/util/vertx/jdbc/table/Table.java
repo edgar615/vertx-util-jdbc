@@ -45,14 +45,14 @@ public class Table {
   public List<String> getFields() {
     return columns.stream()
             .filter(c -> !c.isIgnore())
-            .map(c -> c.getLowerCamelName())
+            .map(c -> c.getName())
             .collect(Collectors.toList());
   }
 
   public List<String> getVirtualFields() {
     return columns.stream()
             .filter(c -> c.isGenColumn())
-            .map(c -> c.getLowerCamelName())
+            .map(c -> c.getName())
             .collect(Collectors.toList());
   }
 

@@ -170,9 +170,9 @@ public class JdbcUtils {
       List<String> tableFields = tableFields(tableName);
       selectedField = Joiner.on(",")
               .join(fields.stream()
-                            .map(f -> underscoreName(f))
-                            .filter(f -> tableFields.contains(f))
-                            .collect(Collectors.toList()));
+                      .map(f -> underscoreName(f))
+                      .filter(f -> tableFields.contains(f))
+                      .collect(Collectors.toList()));
     }
     StringBuilder s = new StringBuilder();
     s.append("select ")
@@ -219,7 +219,7 @@ public class JdbcUtils {
     jsonObject.forEach(e -> {
       String columnName = underscoreName(e.getKey());
       if (e.getValue() != null && !virtualFields.contains(columnName)
-          && fields.contains(columnName)) {
+              && fields.contains(columnName)) {
         columns.add(columnName + " = ?");
         params.add(e.getValue());
       }
@@ -252,10 +252,10 @@ public class JdbcUtils {
     List<String> virtualFields = getTable(tableName).getVirtualFields();
     List<String> fields = getTable(tableName).getFields();
     jsonObject.forEach(e -> {
-      String columnName = lowerCamelName(e.getKey());
+      String columnName = underscoreName(e.getKey());
       if (e.getValue() != null && !virtualFields.contains(columnName)
-          && fields.contains(columnName)) {
-        columns.add(underscoreName(columnName));
+              && fields.contains(columnName)) {
+        columns.add(columnName);
         prepare.add("?");
         params.add(e.getValue());
       }

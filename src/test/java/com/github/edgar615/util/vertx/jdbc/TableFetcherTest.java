@@ -63,11 +63,12 @@ public class TableFetcherTest {
   public void testInsert(TestContext testContext) {
     JsonObject data = new JsonObject()
             .put(UUID.randomUUID().toString(), "foo")
+            .put("username", "foo")
             .put("areaCode", "foo");
     SQLBindings sqlBindings = JdbcUtils.insert("user", data);
     System.out.println(sqlBindings.sql());
     System.out.println(sqlBindings.bindings());
-    Assert.assertEquals("insert into user(username) values(?)", sqlBindings.sql());
+    Assert.assertEquals("insert into user(username,area_code) values(?,?)", sqlBindings.sql());
   }
 
   @Test
@@ -82,11 +83,11 @@ public class TableFetcherTest {
   public void testUpdateById(TestContext testContext) {
     JsonObject data = new JsonObject()
             .put(UUID.randomUUID().toString(), "foo")
-            .put("username", "foo");
+            .put("username", "foo") .put("areaCode", "foo");
     SQLBindings sqlBindings = JdbcUtils.updateById("user", data, 1);
     System.out.println(sqlBindings.sql());
     System.out.println(sqlBindings.bindings());
-    Assert.assertEquals("update user set username = ? where user_id = ?", sqlBindings.sql());
+    Assert.assertEquals("update user set username = ? area_code = ? where user_id = ?", sqlBindings.sql());
   }
 
   @Test
