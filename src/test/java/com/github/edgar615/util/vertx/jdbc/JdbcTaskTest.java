@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Edgar on 2018/4/18.
@@ -144,6 +145,7 @@ public class JdbcTaskTest {
   @Test
   public void test(TestContext testContext) {
     AsyncSQLClient sqlClient = MySQLClient.createShared(vertx, mySQLConfig);
+
     JdbcTask.create(sqlClient).execute("list", FindByExampleAction.create("user", Example.create()))
             .andThen(ctx -> {
               List<JsonObject> list = (List<JsonObject>) ctx.get("list");
