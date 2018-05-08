@@ -27,6 +27,8 @@ public class TableFetcherOptions {
 
   public static final int DEFAULT_PORT = 3306;
 
+  public static final int DEFAULT_LOGIN_TIMEOUT = 10;
+
   public static final String DEFAULT_DATABASE = "test";
 
   public static final String DEFAULT_USERNAME = "root";
@@ -72,6 +74,8 @@ public class TableFetcherOptions {
 
   private String password = DEFAULT_PASSWORD;
 
+  private int loginTimeout = DEFAULT_LOGIN_TIMEOUT;
+
   /**
    * Default constructor
    */
@@ -83,7 +87,7 @@ public class TableFetcherOptions {
 
   public String getJdbcUrl() {
     String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database;
-    if (Strings.isNullOrEmpty(jdbcArg)) {
+    if (!Strings.isNullOrEmpty(jdbcArg)) {
       jdbcUrl += "?" + jdbcArg;
     }
     return jdbcUrl;
@@ -104,6 +108,15 @@ public class TableFetcherOptions {
 
   public TableFetcherOptions setPort(int port) {
     this.port = port;
+    return this;
+  }
+
+  public int getLoginTimeout() {
+    return loginTimeout;
+  }
+
+  public TableFetcherOptions setLoginTimeout(int loginTimeout) {
+    this.loginTimeout = loginTimeout;
     return this;
   }
 

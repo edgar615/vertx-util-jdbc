@@ -11,6 +11,7 @@
     "testTimeout": 10000
   },
   "persistent": {
+    "loginTimeout": 10,
     "tables": ["user", "device"],
     "ignoreColumns": ["created_on", "updated_on"],
     "address" : "__com.github.edgar615.util.vertx.jdbc"
