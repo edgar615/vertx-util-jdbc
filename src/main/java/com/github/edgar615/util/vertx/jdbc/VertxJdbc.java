@@ -12,7 +12,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.SQLConnection;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -44,6 +47,7 @@ public interface VertxJdbc {
    */
 
   void insertAndGenerateKey(Persistent<Integer> persistent, Handler<AsyncResult<Integer>> handler);
+
   /**
    * 根据主键删除.
    *
@@ -77,10 +81,29 @@ public interface VertxJdbc {
    * @param id         主键
    * @param handler    修改的记录数
    * @param <ID>       主键类型
-   * @param <T>        持久化对象
    */
-  <ID, T extends Persistent<ID>> void updateById(Persistent<ID> persistent, ID id,
-                                                 Handler<AsyncResult<Integer>> handler);
+  default <ID> void updateById(Persistent<ID> persistent, ID id,
+                               Handler<AsyncResult<Integer>> handler) {
+    updateById(persistent, new HashMap<>(), new ArrayList<>(), id, handler);
+  }
+
+  /**
+   * 根据主键更新，忽略实体中的null
+   *
+   * @param persistent 持久化对象
+   * @param addOrSub   需要做增加或者减去的字段，value为正数表示增加，负数表示减少
+   * @param nullFields 需要设为null的字段
+   * @param id         主键ID
+   * @param handler    修改的记录数
+   * @param <ID>       主键类型
+   * @return
+   */
+  <ID> void updateById(Persistent<ID> persistent,
+                      Map<String, Integer> addOrSub,
+                      List<String> nullFields,
+                      ID id,
+                      Handler<AsyncResult<Integer>> handler);
+
 
   /**
    * 根据条件更新，忽略实体中的null.
@@ -89,42 +112,28 @@ public interface VertxJdbc {
    * @param example    查询条件
    * @param handler    修改的记录数
    * @param <ID>       条件集合
-   * @param <T>        持久化对象
    */
-  <ID, T extends Persistent<ID>> void updateByExample(Persistent<ID> persistent,
-                                                      Example example,
-                                                      Handler<AsyncResult<Integer>>
-                                                              handler);
+  default <ID> void updateByExample(Persistent<ID> persistent,
+                                    Example example,
+                                    Handler<AsyncResult<Integer>> handler) {
+    updateByExample(persistent, new HashMap<>(), new ArrayList<>(), example, handler);
+  }
 
   /**
-   * 根据主键，将某些字段更新为null.
+   * 根据条件更新，忽略实体中的null
    *
-   * @param elementType 持久化对象
-   * @param fields      需要更新的字段
-   * @param id          主键
-   * @param handler     修改的记录数
-   * @param <ID>        主键类型
-   * @param <T>         持久化对象
+   * @param persistent 持久化对象
+   * @param addOrSub   需要做增加或者减去的字段，value为正数表示增加，负数表示减少
+   * @param nullFields 需要设为null的字段
+   * @param example    查询条件
+   * @param handler    修改的记录数
+   * @param <ID>       主键类型
+   * @return
    */
-  <ID, T extends Persistent<ID>> void setNullById(Class<T> elementType, List<String> fields,
-                                                  ID id,
-                                                  Handler<AsyncResult<Integer>> handler);
-
-  /**
-   * 根据条件更新.
-   *
-   * @param elementType 持久化对象
-   * @param fields      需要更新的字段
-   * @param example     查询条件
-   * @param handler     修改的记录数
-   * @param <ID>        条件集合
-   * @param <T>         持久化对象
-   */
-  <ID, T extends Persistent<ID>> void setNullByExample(Class<T> elementType,
-                                                       List<String> fields,
-                                                       Example example,
-                                                       Handler<AsyncResult<Integer>>
-                                                               handler);
+  <ID> void updateByExample(Persistent<ID> persistent,
+                           Map<String, Integer> addOrSub,
+                           List<String> nullFields, Example example,
+                           Handler<AsyncResult<Integer>> handler);
 
   /**
    * 根据主键查找.
