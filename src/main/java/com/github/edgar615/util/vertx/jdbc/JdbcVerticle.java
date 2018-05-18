@@ -72,8 +72,12 @@ public class JdbcVerticle extends AbstractVerticle {
             .setPassword(password)
             .setHost(host)
             .setPort(port)
-            .setDatabase(database);
+            .setDatabase(database)
+            .setJdbcArg("connectTimeout=" + mySQLConfig.getLong("connectTimeout", 10000l));
     JsonObject persistentConfig = config().getJsonObject("persistent", new JsonObject());
+    if (persistentConfig.getValue("loginTimeout") instanceof Integer) {
+      options.setLoginTimeout(persistentConfig.getInteger("loginTimeout"));
+    }
     if (persistentConfig.getValue("tables") instanceof JsonArray) {
       options.addGenTables(convertToListString(persistentConfig.getJsonArray("tables")));
     }

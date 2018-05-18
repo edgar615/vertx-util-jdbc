@@ -31,11 +31,11 @@ public class TableFetcher {
         List<Table> tables = fetchTable();
         f.complete(tables);
       } catch (Exception e) {
+        LOGGER.error("Error occcured during fetch table." + e);
         f.fail(e);
       }
     }, ar -> {
       if (ar.failed()) {
-        ar.cause().printStackTrace();
         completeFuture.fail(ar.cause());
         return;
       }
@@ -45,7 +45,7 @@ public class TableFetcher {
 
   }
 
-  private List<Table> fetchTable() {
+  private List<Table> fetchTable() throws Exception {
     List<Table> tables = new ArrayList<>();
     Connection conn = null;
     try {
@@ -96,9 +96,6 @@ public class TableFetcher {
           }
         }
       }
-    } catch (Exception e) {
-      LOGGER.error("Error occcured during code generation." + e);
-      e.printStackTrace();
     } finally {
       if (conn != null) {
         try {
@@ -130,6 +127,7 @@ public class TableFetcher {
             "Connecting to database at:[" + options.getJdbcUrl() + "]" + " with username/password:["
             +
             userName + "/" + password + "]");
+    DriverManager.setLoginTimeout(options.getLoginTimeout());
     if (userName == null && password == null) {
       conn = DriverManager.getConnection(options.getJdbcUrl());
     } else {
