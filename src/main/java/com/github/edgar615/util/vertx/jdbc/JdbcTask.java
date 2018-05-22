@@ -18,6 +18,28 @@ public interface JdbcTask {
 
   Logger LOGGER = LoggerFactory.getLogger(JdbcTask.class);
 
+  <T> Future<T> done(Function<Map<String, Object>, T> function);
+
+  /**
+   * 执行JDBC操作，将结果保存在上下文中
+   *
+   * @param taskName       上下文中的结果名
+   * @param actionFunction 根据上下文转换出jdbc操作
+   * @param <T>
+   * @return
+   */
+  <T> JdbcTask execute(String taskName,
+                       Function<Map<String, Object>, JdbcAction<T>> actionFunction);
+
+  JdbcTask andThen(Consumer<Map<String, Object>> consumer);
+
+  /**
+   * 开启事务
+   *
+   * @return
+   */
+  JdbcTask startTx();
+
   static JdbcTask create(AsyncSQLClient sqlClient) {
     return new JdbcTaskImpl(sqlClient);
   }
@@ -25,8 +47,6 @@ public interface JdbcTask {
   static JdbcTask create(AsyncSQLClient sqlClient, boolean startTx) {
     return new JdbcTaskImpl(sqlClient, startTx);
   }
-
-  <T> Future<T> done(Function<Map<String, Object>, T> function);
 
   /**
    * 执行JDBC操作
@@ -61,24 +81,5 @@ public interface JdbcTask {
   default <T> JdbcTask execute(Function<Map<String, Object>, JdbcAction<T>> actionFunction) {
     return execute(null, actionFunction);
   }
-
-  /**
-   * 执行JDBC操作，将结果保存在上下文中
-   *
-   * @param taskName       上下文中的结果名
-   * @param actionFunction 根据上下文转换出jdbc操作
-   * @param <T>
-   * @return
-   */
-  <T> JdbcTask execute(String taskName, Function<Map<String, Object>, JdbcAction<T>> actionFunction);
-
-  JdbcTask andThen(Consumer<Map<String, Object>> consumer);
-
-  /**
-   * 开启事务
-   *
-   * @return
-   */
-  JdbcTask startTx();
 
 }

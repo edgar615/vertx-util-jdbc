@@ -1,5 +1,8 @@
 package com.github.edgar615.util.vertx.jdbc.action;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+
 import com.github.edgar615.util.base.StringUtils;
 import com.github.edgar615.util.db.SQLBindings;
 import com.github.edgar615.util.db.SqlBuilder;
@@ -8,8 +11,6 @@ import com.github.edgar615.util.exception.SystemException;
 import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.vertx.jdbc.JdbcAction;
 import com.github.edgar615.util.vertx.jdbc.JdbcUtils;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -21,17 +22,19 @@ import java.util.List;
 
 public class UpdateByExampleAction implements JdbcAction<Integer> {
   private final String table;
-  private final JsonObject data;
-  private final Example example;
 
-  public static UpdateByExampleAction create(String table, JsonObject data, Example example) {
-    return new UpdateByExampleAction(table, data, example);
-  }
+  private final JsonObject data;
+
+  private final Example example;
 
   private UpdateByExampleAction(String table, JsonObject data, Example example) {
     this.table = table;
     this.data = data;
     this.example = example;
+  }
+
+  public static UpdateByExampleAction create(String table, JsonObject data, Example example) {
+    return new UpdateByExampleAction(table, data, example);
   }
 
   @Override
@@ -70,7 +73,7 @@ public class UpdateByExampleAction implements JdbcAction<Integer> {
     data.forEach(e -> {
       String columnName = StringUtils.underscoreName(e.getKey());
       if (e.getValue() != null && !virtualFields.contains(columnName)
-              && fields.contains(columnName)) {
+          && fields.contains(columnName)) {
         columns.add(columnName + " = ?");
         params.add(e.getValue());
       }

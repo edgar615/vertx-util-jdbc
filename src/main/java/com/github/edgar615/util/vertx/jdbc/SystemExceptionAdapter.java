@@ -1,7 +1,8 @@
 package com.github.edgar615.util.vertx.jdbc;
 
-import com.github.edgar615.util.exception.SystemException;
 import com.google.common.collect.Multimap;
+
+import com.github.edgar615.util.exception.SystemException;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -25,10 +26,6 @@ public class SystemExceptionAdapter extends ServiceException {
   public SystemExceptionAdapter(SystemException exception) {
     super(exception.getErrorCode().getNumber(), exception.getErrorCode().getMessage());
     this.systemException = exception;
-  }
-
-  public SystemException systemException() {
-    return systemException;
   }
 
   private static Object check(Object val) {
@@ -59,6 +56,10 @@ public class SystemExceptionAdapter extends ServiceException {
       return val.toString();
     }
     return val;
+  }
+
+  public SystemException systemException() {
+    return systemException;
   }
 
 }

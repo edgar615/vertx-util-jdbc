@@ -2,10 +2,10 @@ package com.github.edgar615.util.vertx.jdbc;
 
 import com.google.common.collect.Lists;
 
+import com.github.edgar615.mysql.mapping.TableMappingOptions;
+import com.github.edgar615.mysql.mapping.TableRegistry;
 import com.github.edgar615.util.db.SQLBindings;
 import com.github.edgar615.util.vertx.jdbc.table.TableFetcher;
-import com.github.edgar615.util.vertx.jdbc.table.TableFetcherOptions;
-import com.github.edgar615.util.vertx.jdbc.table.TableRegistry;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -34,9 +34,9 @@ public class TableFetcherTest {
   @Before
   public void setUp(TestContext testContext) {
     vertx = Vertx.vertx();
-    TableFetcherOptions options = new TableFetcherOptions()
+    TableMappingOptions options = new TableMappingOptions()
             .setHost("test.ihorn.com.cn")
-            .setDatabase("user_new")
+            .setDatabase("user")
             .setUsername("admin")
             .setPassword("csst");
     AtomicBoolean check = new AtomicBoolean();
@@ -87,7 +87,8 @@ public class TableFetcherTest {
     SQLBindings sqlBindings = JdbcUtils.updateById("user", data, 1);
     System.out.println(sqlBindings.sql());
     System.out.println(sqlBindings.bindings());
-    Assert.assertEquals("update user set username = ? area_code = ? where user_id = ?", sqlBindings.sql());
+    Assert.assertEquals("update user set username = ?,area_code = ? where user_id = ?",
+                        sqlBindings.sql());
   }
 
   @Test

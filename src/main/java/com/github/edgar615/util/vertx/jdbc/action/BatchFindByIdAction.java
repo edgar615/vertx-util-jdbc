@@ -16,12 +16,12 @@ import java.util.List;
 public class BatchFindByIdAction implements JdbcAction<List<JsonObject>> {
   private final List<FindByIdAction> actions;
 
-  public static BatchFindByIdAction create(List<FindByIdAction> actions) {
-    return new BatchFindByIdAction(actions);
-  }
-
   private BatchFindByIdAction(List<FindByIdAction> actions) {
     this.actions = actions;
+  }
+
+  public static BatchFindByIdAction create(List<FindByIdAction> actions) {
+    return new BatchFindByIdAction(actions);
   }
 
   @Override

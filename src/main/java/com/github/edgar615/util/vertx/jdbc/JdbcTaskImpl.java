@@ -153,7 +153,8 @@ class JdbcTaskImpl implements JdbcTask {
   }
 
   @Override
-  public <T> JdbcTask execute(String taskName, Function<Map<String, Object>, JdbcAction<T>> actionFunction) {
+  public <T> JdbcTask execute(String taskName,
+                              Function<Map<String, Object>, JdbcAction<T>> actionFunction) {
     this.task = task.flatMap(ctx -> {
       if (connection == null) {
         return Future.failedFuture("no connection init in task");

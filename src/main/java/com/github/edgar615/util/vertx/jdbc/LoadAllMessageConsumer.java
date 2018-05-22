@@ -13,11 +13,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Created by Edgar on 2018/4/26.
+ * 用来从数据库中加载全部数据.
+ * 消息的格式：
+ * publishAddress: 取到一次数据后的广播地址
+ * data: {
+ * resource: 表名
+ * query: 默认查询条件
+ * limit: 每次获取数量
+ * }
  *
  * @author Edgar  Date 2018/4/26
  */
@@ -42,7 +48,7 @@ public class LoadAllMessageConsumer implements Handler<Message<JsonObject>> {
     loadAll(data, pubAddress, new AtomicInteger(0));
   }
 
-  public void loadAll(JsonObject jsonObject, String publishAddress, AtomicInteger count) {
+  private void loadAll(JsonObject jsonObject, String publishAddress, AtomicInteger count) {
     String table = jsonObject.getString("resource");
     String query = jsonObject.getString("query");
 //    Integer start = jsonObject.getInteger("start", 0);

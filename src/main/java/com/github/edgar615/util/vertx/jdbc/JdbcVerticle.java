@@ -2,9 +2,9 @@ package com.github.edgar615.util.vertx.jdbc;
 
 import com.google.common.base.Joiner;
 
+import com.github.edgar615.mysql.mapping.TableMappingOptions;
 import com.github.edgar615.util.vertx.eventbus.EventbusUtils;
 import com.github.edgar615.util.vertx.jdbc.table.TableFetcher;
-import com.github.edgar615.util.vertx.jdbc.table.TableFetcherOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -68,7 +68,7 @@ public class JdbcVerticle extends AbstractVerticle {
     String username = mySQLConfig.getString("username", "vertx");
     String password = mySQLConfig.getString("password", "password");
     String database = mySQLConfig.getString("database", "testdb");
-    TableFetcherOptions options = new TableFetcherOptions().setUsername(username)
+    TableMappingOptions options = new TableMappingOptions().setUsername(username)
             .setPassword(password)
             .setHost(host)
             .setPort(port)

@@ -1,10 +1,11 @@
 package com.github.edgar615.util.vertx.jdbc.action;
 
+import com.google.common.base.Strings;
+
 import com.github.edgar615.util.exception.DefaultErrorCode;
 import com.github.edgar615.util.exception.SystemException;
 import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.vertx.jdbc.JdbcAction;
-import com.google.common.base.Strings;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -15,15 +16,16 @@ import java.util.List;
 
 public class FindFirstByExampleAction implements JdbcAction<JsonObject> {
   private final String table;
-  private final Example example;
 
-  public static FindFirstByExampleAction create(String table, Example example) {
-    return new FindFirstByExampleAction(table, example);
-  }
+  private final Example example;
 
   private FindFirstByExampleAction(String table, Example example) {
     this.table = table;
     this.example = example;
+  }
+
+  public static FindFirstByExampleAction create(String table, Example example) {
+    return new FindFirstByExampleAction(table, example);
   }
 
   @Override

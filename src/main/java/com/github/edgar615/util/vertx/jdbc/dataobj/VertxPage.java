@@ -2,6 +2,7 @@ package com.github.edgar615.util.vertx.jdbc.dataobj;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
@@ -21,12 +22,6 @@ public final class VertxPage {
 
   private int totalRecords;
 
-  public JsonObject toJson() {
-    JsonObject jsonObject = new JsonObject();
-    VertxPageConverter.toJson(this, jsonObject);
-    return jsonObject;
-  }
-
   public VertxPage(JsonObject jsonObject) {
     VertxPageConverter.fromJson(jsonObject, this);
   }
@@ -34,14 +29,6 @@ public final class VertxPage {
   private VertxPage(int totalRecords, List<JsonObject> records) {
     this.totalRecords = totalRecords;
     this.records = ImmutableList.copyOf(records);
-  }
-
-  public void setRecords(List<JsonObject> records) {
-    this.records = records;
-  }
-
-  public void setTotalRecords(int totalRecords) {
-    this.totalRecords = totalRecords;
   }
 
   /**
@@ -56,12 +43,26 @@ public final class VertxPage {
     return new VertxPage(totalRecords, records);
   }
 
+  public JsonObject toJson() {
+    JsonObject jsonObject = new JsonObject();
+    VertxPageConverter.toJson(this, jsonObject);
+    return jsonObject;
+  }
+
   public List<JsonObject> getRecords() {
     return records;
   }
 
+  public void setRecords(List<JsonObject> records) {
+    this.records = records;
+  }
+
   public int getTotalRecords() {
     return totalRecords;
+  }
+
+  public void setTotalRecords(int totalRecords) {
+    this.totalRecords = totalRecords;
   }
 
   @Override

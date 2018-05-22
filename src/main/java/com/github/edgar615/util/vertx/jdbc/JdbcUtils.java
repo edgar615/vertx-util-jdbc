@@ -8,6 +8,8 @@ import com.google.common.collect.Lists;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.github.edgar615.mysql.mapping.Table;
+import com.github.edgar615.mysql.mapping.TableRegistry;
 import com.github.edgar615.util.base.MorePreconditions;
 import com.github.edgar615.util.base.StringUtils;
 import com.github.edgar615.util.db.SQLBindings;
@@ -15,8 +17,6 @@ import com.github.edgar615.util.exception.DefaultErrorCode;
 import com.github.edgar615.util.exception.SystemException;
 import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.search.Op;
-import com.github.edgar615.util.vertx.jdbc.table.Table;
-import com.github.edgar615.util.vertx.jdbc.table.TableRegistry;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -137,6 +137,11 @@ public class JdbcUtils {
   }
 
   public static String primaryKey(String tableName) {
+    Table table = getTable(tableName);
+    if (table.getPkList().size() != 1) {
+      throw new RuntimeException(
+              table.getName() + " should be only 1 pk,but:" + table.getPkList().size());
+    }
     return getTable(tableName).getPk();
   }
 
@@ -170,9 +175,9 @@ public class JdbcUtils {
       List<String> tableFields = tableFields(tableName);
       selectedField = Joiner.on(",")
               .join(fields.stream()
-                      .map(f -> underscoreName(f))
-                      .filter(f -> tableFields.contains(f))
-                      .collect(Collectors.toList()));
+                            .map(f -> underscoreName(f))
+                            .filter(f -> tableFields.contains(f))
+                            .collect(Collectors.toList()));
     }
     StringBuilder s = new StringBuilder();
     s.append("select ")
@@ -219,7 +224,7 @@ public class JdbcUtils {
     jsonObject.forEach(e -> {
       String columnName = underscoreName(e.getKey());
       if (e.getValue() != null && !virtualFields.contains(columnName)
-              && fields.contains(columnName)) {
+          && fields.contains(columnName)) {
         columns.add(columnName + " = ?");
         params.add(e.getValue());
       }
@@ -254,7 +259,7 @@ public class JdbcUtils {
     jsonObject.forEach(e -> {
       String columnName = underscoreName(e.getKey());
       if (e.getValue() != null && !virtualFields.contains(columnName)
-              && fields.contains(columnName)) {
+          && fields.contains(columnName)) {
         columns.add(columnName);
         prepare.add("?");
         params.add(e.getValue());

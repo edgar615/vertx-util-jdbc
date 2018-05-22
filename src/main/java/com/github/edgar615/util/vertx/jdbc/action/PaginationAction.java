@@ -1,12 +1,13 @@
 package com.github.edgar615.util.vertx.jdbc.action;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+
 import com.github.edgar615.util.exception.DefaultErrorCode;
 import com.github.edgar615.util.exception.SystemException;
 import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.vertx.jdbc.JdbcAction;
 import com.github.edgar615.util.vertx.jdbc.dataobj.VertxPagination;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -17,15 +18,12 @@ import java.util.List;
 
 public class PaginationAction implements JdbcAction<VertxPagination> {
   private final String table;
+
   private final Example example;
 
   private final Integer page;
 
   private final Integer pageSize;
-
-  public static PaginationAction create(String table, Example example, Integer page, Integer pageSize) {
-    return new PaginationAction(table, example, page, pageSize);
-  }
 
   private PaginationAction(String table, Example example, Integer page, Integer pageSize) {
     this.table = table;
@@ -40,6 +38,11 @@ public class PaginationAction implements JdbcAction<VertxPagination> {
       this.pageSize = pageSize;
     }
     this.example = example;
+  }
+
+  public static PaginationAction create(String table, Example example, Integer page,
+                                        Integer pageSize) {
+    return new PaginationAction(table, example, page, pageSize);
   }
 
   @Override

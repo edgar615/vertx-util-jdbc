@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 public interface JdbcAction<T> {
   Logger LOGGER = LoggerFactory.getLogger(JdbcAction.class);
 
+  void execute(SQLConnection connection, Handler<AsyncResult<T>> handler);
+
   default void log(SQLBindings sqlBindings) {
     LOGGER.info("sql:{}, args:{}", sqlBindings.sql(), sqlBindings.bindings());
   }
@@ -32,7 +34,7 @@ public interface JdbcAction<T> {
                               Handler<AsyncResult<Integer>> handler) {
     log(sqlBindings);
     connection.updateWithParams(sqlBindings.sql(),
-            new JsonArray(sqlBindings.bindings()), result -> {
+                                new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -51,7 +53,7 @@ public interface JdbcAction<T> {
                      Handler<AsyncResult<List<JsonObject>>> handler) {
     log(sqlBindings);
     connection.queryWithParams(sqlBindings.sql(),
-            new JsonArray(sqlBindings.bindings()), result -> {
+                               new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -74,7 +76,4 @@ public interface JdbcAction<T> {
               }
             });
   }
-
-
-  void execute(SQLConnection connection, Handler<AsyncResult<T>> handler);
 }

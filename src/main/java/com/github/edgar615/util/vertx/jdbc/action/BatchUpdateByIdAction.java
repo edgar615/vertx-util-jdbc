@@ -15,21 +15,21 @@ import java.util.List;
 public class BatchUpdateByIdAction implements JdbcAction<Integer> {
   private final List<UpdateByIdAction> actions;
 
-  public static BatchUpdateByIdAction create(List<UpdateByIdAction> actions) {
-    return new BatchUpdateByIdAction(actions);
-  }
-
   private BatchUpdateByIdAction(List<UpdateByIdAction> actions) {
     this.actions = actions;
   }
 
+  public static BatchUpdateByIdAction create(List<UpdateByIdAction> actions) {
+    return new BatchUpdateByIdAction(actions);
+  }
+
   @Override
   public void execute(SQLConnection connection, Handler<AsyncResult<Integer>> handler) {
-      if (actions == null) {
-        SystemException exception = SystemException.create(DefaultErrorCode.MISSING_ARGS)
-                .setDetails("actions");
-        throw exception;
-      }
+    if (actions == null) {
+      SystemException exception = SystemException.create(DefaultErrorCode.MISSING_ARGS)
+              .setDetails("actions");
+      throw exception;
+    }
     List<Future> futures = new ArrayList<Future>();
     for (UpdateByIdAction action : actions) {
       Future<Integer> deleteFuture = Future.future();

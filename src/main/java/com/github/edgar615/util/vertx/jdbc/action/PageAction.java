@@ -1,11 +1,12 @@
 package com.github.edgar615.util.vertx.jdbc.action;
 
+import com.google.common.base.Strings;
+
 import com.github.edgar615.util.exception.DefaultErrorCode;
 import com.github.edgar615.util.exception.SystemException;
 import com.github.edgar615.util.search.Example;
 import com.github.edgar615.util.vertx.jdbc.JdbcAction;
 import com.github.edgar615.util.vertx.jdbc.dataobj.VertxPage;
-import com.google.common.base.Strings;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -16,15 +17,12 @@ import java.util.List;
 
 public class PageAction implements JdbcAction<VertxPage> {
   private final String table;
+
   private final Example example;
 
   private final Integer start;
 
   private final Integer limit;
-
-  public static PageAction create(String table, Example example, Integer start, Integer limit) {
-    return new PageAction(table, example, start, limit);
-  }
 
   private PageAction(String table, Example example, Integer start, Integer limit) {
     this.table = table;
@@ -39,6 +37,10 @@ public class PageAction implements JdbcAction<VertxPage> {
       this.limit = limit;
     }
     this.example = example;
+  }
+
+  public static PageAction create(String table, Example example, Integer start, Integer limit) {
+    return new PageAction(table, example, start, limit);
   }
 
   @Override

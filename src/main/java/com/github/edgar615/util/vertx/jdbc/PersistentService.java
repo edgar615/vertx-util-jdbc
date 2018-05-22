@@ -46,7 +46,7 @@ public interface PersistentService {
                   Handler<AsyncResult<VertxPagination>> handler);
 
   void page(FindExample example,
-                     Handler<AsyncResult<VertxPage>> handler);
+            Handler<AsyncResult<VertxPage>> handler);
 
   @ProxyClose
   void close();

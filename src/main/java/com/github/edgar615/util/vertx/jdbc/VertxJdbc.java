@@ -1,11 +1,12 @@
 package com.github.edgar615.util.vertx.jdbc;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+
 import com.github.edgar615.util.db.Page;
 import com.github.edgar615.util.db.Pagination;
 import com.github.edgar615.util.db.Persistent;
 import com.github.edgar615.util.search.Example;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -44,6 +45,7 @@ public interface VertxJdbc {
    */
 
   void insertAndGenerateKey(Persistent<Integer> persistent, Handler<AsyncResult<Integer>> handler);
+
   /**
    * 根据主键删除.
    *

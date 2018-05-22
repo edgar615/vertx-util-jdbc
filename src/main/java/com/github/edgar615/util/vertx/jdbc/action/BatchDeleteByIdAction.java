@@ -1,9 +1,10 @@
 package com.github.edgar615.util.vertx.jdbc.action;
 
+import com.google.common.base.Strings;
+
 import com.github.edgar615.util.exception.DefaultErrorCode;
 import com.github.edgar615.util.exception.SystemException;
 import com.github.edgar615.util.vertx.jdbc.JdbcAction;
-import com.google.common.base.Strings;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -15,15 +16,16 @@ import java.util.List;
 
 public class BatchDeleteByIdAction implements JdbcAction<Integer> {
   private final String table;
-  private final List<Object> idList;
 
-  public static BatchDeleteByIdAction create(String table, List<Object> idList) {
-    return new BatchDeleteByIdAction(table, idList);
-  }
+  private final List<Object> idList;
 
   private BatchDeleteByIdAction(String table, List<Object> idList) {
     this.table = table;
     this.idList = idList;
+  }
+
+  public static BatchDeleteByIdAction create(String table, List<Object> idList) {
+    return new BatchDeleteByIdAction(table, idList);
   }
 
   @Override

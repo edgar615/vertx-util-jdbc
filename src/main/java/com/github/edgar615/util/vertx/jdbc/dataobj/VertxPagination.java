@@ -2,6 +2,7 @@ package com.github.edgar615.util.vertx.jdbc.dataobj;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
@@ -26,6 +27,10 @@ public final class VertxPagination {
 
   private int totalPages;
 
+  public VertxPagination(JsonObject jsonObject) {
+    VertxPaginationConverter.fromJson(jsonObject, this);
+  }
+
   private VertxPagination(int page, int pageSize, int totalRecords, List<JsonObject> records) {
     this.page = page;
     this.pageSize = pageSize;
@@ -36,16 +41,6 @@ public final class VertxPagination {
     }
     this.totalPages = pages;
     this.records = ImmutableList.copyOf(records);
-  }
-
-  public JsonObject toJson() {
-    JsonObject jsonObject = new JsonObject();
-    VertxPaginationConverter.toJson(this, jsonObject);
-    return jsonObject;
-  }
-
-  public VertxPagination(JsonObject jsonObject) {
-    VertxPaginationConverter.fromJson(jsonObject, this);
   }
 
   /**
@@ -62,6 +57,12 @@ public final class VertxPagination {
     return new VertxPagination(page, pageSize, totalRecords, records);
   }
 
+  public JsonObject toJson() {
+    JsonObject jsonObject = new JsonObject();
+    VertxPaginationConverter.toJson(this, jsonObject);
+    return jsonObject;
+  }
+
   public List<JsonObject> getRecords() {
     return records;
   }
@@ -70,36 +71,36 @@ public final class VertxPagination {
     this.records = records;
   }
 
-  public void setPage(int page) {
-    this.page = page;
-  }
-
-  public void setPageSize(int pageSize) {
-    this.pageSize = pageSize;
-  }
-
-  public void setTotalRecords(int totalRecords) {
-    this.totalRecords = totalRecords;
-  }
-
-  public void setTotalPages(int totalPages) {
-    this.totalPages = totalPages;
-  }
-
   public int getPage() {
     return page;
+  }
+
+  public void setPage(int page) {
+    this.page = page;
   }
 
   public int getPageSize() {
     return pageSize;
   }
 
+  public void setPageSize(int pageSize) {
+    this.pageSize = pageSize;
+  }
+
   public int getTotalRecords() {
     return totalRecords;
   }
 
+  public void setTotalRecords(int totalRecords) {
+    this.totalRecords = totalRecords;
+  }
+
   public int getTotalPages() {
     return totalPages;
+  }
+
+  public void setTotalPages(int totalPages) {
+    this.totalPages = totalPages;
   }
 
   @Override
