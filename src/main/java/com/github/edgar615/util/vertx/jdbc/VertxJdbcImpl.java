@@ -1,12 +1,13 @@
 package com.github.edgar615.util.vertx.jdbc;
 
+import com.google.common.base.Joiner;
+
 import com.github.edgar615.util.base.MorePreconditions;
 import com.github.edgar615.util.base.StringUtils;
 import com.github.edgar615.util.db.Persistent;
 import com.github.edgar615.util.db.SQLBindings;
 import com.github.edgar615.util.db.SqlBuilder;
 import com.github.edgar615.util.search.Example;
-import com.google.common.base.Joiner;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -49,7 +50,7 @@ class VertxJdbcImpl implements VertxJdbc {
   public <ID> void insert(Persistent<ID> persistent, Handler<AsyncResult<Void>> handler) {
     SQLBindings sqlBindings = SqlBuilder.insert(persistent);
     connection.updateWithParams(sqlBindings.sql(),
-            new JsonArray(sqlBindings.bindings()), result -> {
+                                new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -64,10 +65,11 @@ class VertxJdbcImpl implements VertxJdbc {
   }
 
   @Override
-  public void insertAndGenerateKey(Persistent<Integer> persistent, Handler<AsyncResult<Integer>> handler) {
+  public void insertAndGenerateKey(Persistent<Integer> persistent,
+                                   Handler<AsyncResult<Integer>> handler) {
     SQLBindings sqlBindings = SqlBuilder.insert(persistent);
     connection.updateWithParams(sqlBindings.sql(),
-            new JsonArray(sqlBindings.bindings()), ar -> {
+                                new JsonArray(sqlBindings.bindings()), ar -> {
               if (ar.failed()) {
                 handler.handle(Future.failedFuture(ar.cause()));
                 return;
@@ -88,7 +90,7 @@ class VertxJdbcImpl implements VertxJdbc {
                                                         Handler<AsyncResult<Integer>> handler) {
     SQLBindings sqlBindings = SqlBuilder.deleteById(elementType, id);
     connection.updateWithParams(sqlBindings.sql(),
-            new JsonArray(sqlBindings.bindings()), result -> {
+                                new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -112,12 +114,12 @@ class VertxJdbcImpl implements VertxJdbc {
     SQLBindings sqlBindings = SqlBuilder.whereSql(example.criteria());
     String tableName = StringUtils.underscoreName(elementType.getSimpleName());
     String sql = "delete from "
-            + tableName;
+                 + tableName;
     if (!example.criteria().isEmpty()) {
       sql += " where " + sqlBindings.sql();
     }
     connection.updateWithParams(sql,
-            new JsonArray(sqlBindings.bindings()), result -> {
+                                new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -132,16 +134,22 @@ class VertxJdbcImpl implements VertxJdbc {
   }
 
   @Override
-  public <ID, T extends Persistent<ID>> void updateById(Persistent<ID> persistent, ID id,
-                                                        Handler<AsyncResult<Integer>> handler) {
+  public <ID> void updateById(Persistent<ID> persistent, Map<String, Integer> addOrSub,
+                              List<String> nullFields, ID id,
+                              Handler<AsyncResult<Integer>> handler) {
     boolean noUpdated = persistent.toMap().values().stream()
             .allMatch(v -> v == null);
-    if (noUpdated) {
+    boolean noAddOrSub = addOrSub.keySet().stream()
+            .allMatch(v -> !persistent.fields().contains(v));
+    boolean noNull = nullFields.stream()
+            .allMatch(v -> !persistent.fields().contains(v));
+    if (noUpdated && noAddOrSub && noNull) {
       handler.handle(Future.succeededFuture(0));
+      return;
     }
     SQLBindings sqlBindings = SqlBuilder.updateById(persistent, id);
     connection.updateWithParams(sqlBindings.sql(),
-            new JsonArray(sqlBindings.bindings()), result -> {
+                                new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -156,14 +164,18 @@ class VertxJdbcImpl implements VertxJdbc {
   }
 
   @Override
-  public <ID, T extends Persistent<ID>> void updateByExample(Persistent<ID> persistent,
-                                                             Example example,
-                                                             Handler<AsyncResult<Integer>>
-                                                                     handler) {
+  public <ID> void updateByExample(Persistent<ID> persistent, Map<String, Integer> addOrSub,
+                                   List<String> nullFields, Example example,
+                                   Handler<AsyncResult<Integer>> handler) {
     boolean noUpdated = persistent.toMap().values().stream()
             .allMatch(v -> v == null);
-    if (noUpdated) {
+    boolean noAddOrSub = addOrSub.keySet().stream()
+            .allMatch(v -> !persistent.fields().contains(v));
+    boolean noNull = nullFields.stream()
+            .allMatch(v -> !persistent.fields().contains(v));
+    if (noUpdated && noAddOrSub && noNull) {
       handler.handle(Future.succeededFuture(0));
+      return;
     }
     //对example做一次清洗，将表中不存在的条件删除，避免频繁出现500错误
     example = example.removeUndefinedField(persistent.fields());
@@ -196,7 +208,7 @@ class VertxJdbcImpl implements VertxJdbc {
       args.addAll(sqlBindings.bindings());
     }
     connection.updateWithParams(sql.toString(),
-            new JsonArray(args), result -> {
+                                new JsonArray(args), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -210,71 +222,6 @@ class VertxJdbcImpl implements VertxJdbc {
             });
   }
 
-  @Override
-  public <ID, T extends Persistent<ID>> void setNullById(Class<T> elementType, List<String> fields,
-                                                         ID id,
-                                                         Handler<AsyncResult<Integer>> handler) {
-    List<String> columns = removeUndefinedColumn(elementType, fields);
-    if (columns.isEmpty()) {
-      handler.handle(Future.succeededFuture(0));
-    }
-    SQLBindings sqlBindings = SqlBuilder.setNullById(elementType, columns, id);
-    connection.updateWithParams(sqlBindings.sql(),
-            new JsonArray(sqlBindings.bindings()), result -> {
-              if (result.failed()) {
-                handler.handle(Future.failedFuture(result.cause()));
-                return;
-              }
-              try {
-                UpdateResult updateResult = result.result();
-                handler.handle(Future.succeededFuture(updateResult.getUpdated()));
-              } catch (Exception e) {
-                handler.handle(Future.failedFuture(e));
-              }
-            });
-  }
-
-  @Override
-  public <ID, T extends Persistent<ID>> void setNullByExample(Class<T> elementType,
-                                                              List<String> fields,
-                                                              Example example,
-                                                              Handler<AsyncResult<Integer>>
-                                                                      handler) {
-    List<String> columns = removeUndefinedColumn(elementType, fields);
-    if (columns.isEmpty()) {
-      handler.handle(Future.succeededFuture(0));
-    }
-    List<String> updatedColumn = columns.stream()
-            .map(c -> c + " = null")
-            .collect(Collectors.toList());
-
-    String tableName = StringUtils.underscoreName(elementType.getSimpleName());
-    StringBuilder sql = new StringBuilder();
-    sql.append("update ")
-            .append(tableName)
-            .append(" set ")
-            .append(Joiner.on(",").join(updatedColumn));
-    List<Object> args = new ArrayList<>();
-    if (!example.criteria().isEmpty()) {
-      SQLBindings sqlBindings = SqlBuilder.whereSql(example.criteria());
-      sql.append(" where ")
-              .append(sqlBindings.sql());
-      args.addAll(sqlBindings.bindings());
-    }
-    connection.updateWithParams(sql.toString(),
-            new JsonArray(args), result -> {
-              if (result.failed()) {
-                handler.handle(Future.failedFuture(result.cause()));
-                return;
-              }
-              try {
-                UpdateResult updateResult = result.result();
-                handler.handle(Future.succeededFuture(updateResult.getUpdated()));
-              } catch (Exception e) {
-                handler.handle(Future.failedFuture(e));
-              }
-            });
-  }
 
   @Override
   public <ID, T extends Persistent<ID>> void findById(Class<T> elementType, ID id,
@@ -289,7 +236,7 @@ class VertxJdbcImpl implements VertxJdbc {
     fields.removeIf(f -> persistent.fields().contains(f));
     SQLBindings sqlBindings = SqlBuilder.findById(elementType, id, fields);
     connection.queryWithParams(sqlBindings.sql(),
-            new JsonArray(sqlBindings.bindings()), result -> {
+                               new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -324,7 +271,7 @@ class VertxJdbcImpl implements VertxJdbc {
     SQLBindings sqlBindings = SqlBuilder.whereSql(example.criteria());
     String tableName = StringUtils.underscoreName(elementType.getSimpleName());
     String sql = "select *  from "
-            + tableName;
+                 + tableName;
     if (!example.criteria().isEmpty()) {
       sql += " where " + sqlBindings.sql();
     } else {
@@ -334,7 +281,7 @@ class VertxJdbcImpl implements VertxJdbc {
       sql += SqlBuilder.orderSql(example.orderBy());
     }
     connection.queryWithParams(sql,
-            new JsonArray(sqlBindings.bindings()), result -> {
+                               new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -365,7 +312,7 @@ class VertxJdbcImpl implements VertxJdbc {
     SQLBindings sqlBindings = SqlBuilder.whereSql(example.criteria());
     String tableName = StringUtils.underscoreName(elementType.getSimpleName());
     String sql = "select *  from "
-            + tableName;
+                 + tableName;
     if (!example.criteria().isEmpty()) {
       sql += " where " + sqlBindings.sql();
     } else {
@@ -379,7 +326,7 @@ class VertxJdbcImpl implements VertxJdbc {
     args.add(start);
     args.add(limit);
     connection.queryWithParams(sql,
-            new JsonArray(args), result -> {
+                               new JsonArray(args), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -405,14 +352,14 @@ class VertxJdbcImpl implements VertxJdbc {
     SQLBindings sqlBindings = SqlBuilder.whereSql(example.criteria());
     String tableName = StringUtils.underscoreName(elementType.getSimpleName());
     String sql = "select count(*) from "
-            + tableName;
+                 + tableName;
     if (!example.criteria().isEmpty()) {
       sql += " where " + sqlBindings.sql();
     } else {
       sql += "  " + sqlBindings.sql();
     }
     connection.queryWithParams(sql,
-            new JsonArray(sqlBindings.bindings()), result -> {
+                               new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
