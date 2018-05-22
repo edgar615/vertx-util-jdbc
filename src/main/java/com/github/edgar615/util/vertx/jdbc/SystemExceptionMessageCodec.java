@@ -30,7 +30,7 @@ public class SystemExceptionMessageCodec implements MessageCodec<SystemException
     JsonObject jsonObject = buffer.toJsonObject();
     int code = jsonObject.getInteger("code", 999);
     String message = jsonObject.getString("message", "unkown");
-    CustomErrorCode errorCode = CustomErrorCode.create(code, message, 400);
+    CustomErrorCode errorCode = CustomErrorCode.create(code, message);
     SystemException systemException = SystemException.create(errorCode);
     jsonObject.remove("code");
     jsonObject.remove("message");
