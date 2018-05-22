@@ -1,13 +1,12 @@
 package com.github.edgar615.util.vertx.jdbc;
 
-import com.google.common.base.Joiner;
-
 import com.github.edgar615.util.base.MorePreconditions;
 import com.github.edgar615.util.base.StringUtils;
 import com.github.edgar615.util.db.Persistent;
 import com.github.edgar615.util.db.SQLBindings;
 import com.github.edgar615.util.db.SqlBuilder;
 import com.github.edgar615.util.search.Example;
+import com.google.common.base.Joiner;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -50,7 +49,7 @@ class VertxJdbcImpl implements VertxJdbc {
   public <ID> void insert(Persistent<ID> persistent, Handler<AsyncResult<Void>> handler) {
     SQLBindings sqlBindings = SqlBuilder.insert(persistent);
     connection.updateWithParams(sqlBindings.sql(),
-                                new JsonArray(sqlBindings.bindings()), result -> {
+            new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -65,11 +64,10 @@ class VertxJdbcImpl implements VertxJdbc {
   }
 
   @Override
-  public void insertAndGenerateKey(Persistent<Integer> persistent,
-                                   Handler<AsyncResult<Integer>> handler) {
+  public void insertAndGenerateKey(Persistent<Integer> persistent, Handler<AsyncResult<Integer>> handler) {
     SQLBindings sqlBindings = SqlBuilder.insert(persistent);
     connection.updateWithParams(sqlBindings.sql(),
-                                new JsonArray(sqlBindings.bindings()), ar -> {
+            new JsonArray(sqlBindings.bindings()), ar -> {
               if (ar.failed()) {
                 handler.handle(Future.failedFuture(ar.cause()));
                 return;
@@ -90,7 +88,7 @@ class VertxJdbcImpl implements VertxJdbc {
                                                         Handler<AsyncResult<Integer>> handler) {
     SQLBindings sqlBindings = SqlBuilder.deleteById(elementType, id);
     connection.updateWithParams(sqlBindings.sql(),
-                                new JsonArray(sqlBindings.bindings()), result -> {
+            new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -114,12 +112,12 @@ class VertxJdbcImpl implements VertxJdbc {
     SQLBindings sqlBindings = SqlBuilder.whereSql(example.criteria());
     String tableName = StringUtils.underscoreName(elementType.getSimpleName());
     String sql = "delete from "
-                 + tableName;
+            + tableName;
     if (!example.criteria().isEmpty()) {
       sql += " where " + sqlBindings.sql();
     }
     connection.updateWithParams(sql,
-                                new JsonArray(sqlBindings.bindings()), result -> {
+            new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -143,7 +141,7 @@ class VertxJdbcImpl implements VertxJdbc {
     }
     SQLBindings sqlBindings = SqlBuilder.updateById(persistent, id);
     connection.updateWithParams(sqlBindings.sql(),
-                                new JsonArray(sqlBindings.bindings()), result -> {
+            new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -198,7 +196,7 @@ class VertxJdbcImpl implements VertxJdbc {
       args.addAll(sqlBindings.bindings());
     }
     connection.updateWithParams(sql.toString(),
-                                new JsonArray(args), result -> {
+            new JsonArray(args), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -222,7 +220,7 @@ class VertxJdbcImpl implements VertxJdbc {
     }
     SQLBindings sqlBindings = SqlBuilder.setNullById(elementType, columns, id);
     connection.updateWithParams(sqlBindings.sql(),
-                                new JsonArray(sqlBindings.bindings()), result -> {
+            new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -264,7 +262,7 @@ class VertxJdbcImpl implements VertxJdbc {
       args.addAll(sqlBindings.bindings());
     }
     connection.updateWithParams(sql.toString(),
-                                new JsonArray(args), result -> {
+            new JsonArray(args), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -291,7 +289,7 @@ class VertxJdbcImpl implements VertxJdbc {
     fields.removeIf(f -> persistent.fields().contains(f));
     SQLBindings sqlBindings = SqlBuilder.findById(elementType, id, fields);
     connection.queryWithParams(sqlBindings.sql(),
-                               new JsonArray(sqlBindings.bindings()), result -> {
+            new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -326,7 +324,7 @@ class VertxJdbcImpl implements VertxJdbc {
     SQLBindings sqlBindings = SqlBuilder.whereSql(example.criteria());
     String tableName = StringUtils.underscoreName(elementType.getSimpleName());
     String sql = "select *  from "
-                 + tableName;
+            + tableName;
     if (!example.criteria().isEmpty()) {
       sql += " where " + sqlBindings.sql();
     } else {
@@ -336,7 +334,7 @@ class VertxJdbcImpl implements VertxJdbc {
       sql += SqlBuilder.orderSql(example.orderBy());
     }
     connection.queryWithParams(sql,
-                               new JsonArray(sqlBindings.bindings()), result -> {
+            new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -367,7 +365,7 @@ class VertxJdbcImpl implements VertxJdbc {
     SQLBindings sqlBindings = SqlBuilder.whereSql(example.criteria());
     String tableName = StringUtils.underscoreName(elementType.getSimpleName());
     String sql = "select *  from "
-                 + tableName;
+            + tableName;
     if (!example.criteria().isEmpty()) {
       sql += " where " + sqlBindings.sql();
     } else {
@@ -381,7 +379,7 @@ class VertxJdbcImpl implements VertxJdbc {
     args.add(start);
     args.add(limit);
     connection.queryWithParams(sql,
-                               new JsonArray(args), result -> {
+            new JsonArray(args), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
@@ -407,14 +405,14 @@ class VertxJdbcImpl implements VertxJdbc {
     SQLBindings sqlBindings = SqlBuilder.whereSql(example.criteria());
     String tableName = StringUtils.underscoreName(elementType.getSimpleName());
     String sql = "select count(*) from "
-                 + tableName;
+            + tableName;
     if (!example.criteria().isEmpty()) {
       sql += " where " + sqlBindings.sql();
     } else {
       sql += "  " + sqlBindings.sql();
     }
     connection.queryWithParams(sql,
-                               new JsonArray(sqlBindings.bindings()), result -> {
+            new JsonArray(sqlBindings.bindings()), result -> {
               if (result.failed()) {
                 handler.handle(Future.failedFuture(result.cause()));
                 return;
